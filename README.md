@@ -586,12 +586,4 @@ curl -X POST http://localhost:3000/api/v1/evaluate \
 | **Phase 4** | 🔲 Planned | Audit ledger persistence (append-only DB), HITL override full implementation |
 | **Phase 5** | 🔲 Planned | Optimistic rollback, dashboard metrics, multi-tenant support |
 
----
 
-## Giấy phép & Liên hệ
-
-Dự án nội bộ — `ISC License`.
-
----
-
-*Tài liệu này được sinh tự động từ source code và tài liệu thiết kế "Cấu Trúc Chủ Đề Agent" (AER Architecture PDF). Cập nhật lần cuối: 2026-09-22.*
