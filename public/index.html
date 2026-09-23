@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearFlowHR — AER Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-bg:   #1e293b;
+      --sidebar-w:    260px;
+      --accent:       #3b82f6;
+      --accent-hover: #2563eb;
+      --approve:      #22c55e;
+      --escalate:     #f59e0b;
+      --reject:       #ef4444;
+      --surface:      #ffffff;
+      --bg:           #f1f5f9;
+      --text:         #0f172a;
+      --muted:        #64748b;
+      --border:       #e2e8f0;
+      --radius:       10px;
+      --shadow:       0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+    }
+
+    html, body { height: 100%; font-family: 'Inter', sans-serif; color: var(--text); }
+    body { display: flex; background: var(--bg); }
+
+    /* ── Sidebar ──────────────────────────────────────────────── */
+    #sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      z-index: 100;
+    }
+
+    .sidebar-brand {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .sidebar-brand .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .sidebar-brand .logo-mark svg { color: white; }
+    .sidebar-brand h1 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+      line-height: 1.4;
+      letter-spacing: .01em;
+    }
+    .sidebar-brand p {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 2px;
+      font-weight: 400;
+    }
+
+    nav { padding: 16px 12px; flex: 1; }
+    nav .nav-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 0 8px;
+      margin-bottom: 6px;
+    }
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 7px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #94a3b8;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      margin-bottom: 2px;
+    }
+    nav a svg { flex-shrink: 0; opacity: .75; }
+    nav a:hover { background: rgba(255,255,255,.07); color: #e2e8f0; }
+    nav a.active { background: rgba(59,130,246,.18); color: #93c5fd; }
+    nav a.active svg { opacity: 1; }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .sidebar-footer p { font-size: 11px; color: #475569; }
+
+    /* ── Main content ─────────────────────────────────────────── */
+    #main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .topbar .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .topbar .status-dot span.dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--approve);
+      box-shadow: 0 0 0 3px rgba(34,197,94,.2);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
+      50%      { box-shadow: 0 0 0 6px rgba(34,197,94,.08); }
+    }
+
+    .content { padding: 28px 32px; }
+
+    /* ── Section visibility ───────────────────────────────────── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Cards ────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title svg { color: var(--accent); }
+
+    /* ── Form grid ────────────────────────────────────────────── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .form-group input,
+    .form-group select {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 12px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+      background: white;
+    }
+    .form-section-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      padding: 6px 0 10px;
+      border-bottom: 1px solid var(--border);
+      margin: 20px 0 16px;
+      grid-column: 1 / -1;
+    }
+
+    /* ── Buttons ──────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 7px;
+      font-size: 13.5px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: background .15s, transform .1s, box-shadow .15s;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 2px 8px rgba(59,130,246,.35);
+    }
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(59,130,246,.4); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.06); }
+    .btn-success { background: var(--approve); color: white; }
+    .btn-success:hover { background: #16a34a; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    /* ── Spinner ──────────────────────────────────────────────── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block;
+    }
+    .spinner.dark {
+      border-color: rgba(59,130,246,.25);
+      border-top-color: var(--accent);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Outcome result card ──────────────────────────────────── */
+    #result-area { margin-top: 24px; }
+
+    .result-card {
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      border-left: 5px solid;
+      position: relative;
+    }
+    .result-card.approve  { background: #f0fdf4; border-color: var(--approve); }
+    .result-card.escalate { background: #fffbeb; border-color: var(--escalate); }
+    .result-card.reject   { background: #fef2f2; border-color: var(--reject); }
+
+    .result-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .outcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .badge-approve  { background: var(--approve); color: white; }
+    .badge-escalate { background: var(--escalate); color: white; }
+    .badge-reject   { background: var(--reject); color: white; }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .result-field label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .result-field p {
+      font-size: 13px;
+      color: var(--text);
+      word-break: break-all;
+    }
+    .result-field.full { grid-column: 1 / -1; }
+    .escalation-box {
+      background: rgba(245,158,11,.1);
+      border: 1px solid rgba(245,158,11,.3);
+      border-radius: 7px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #92400e;
+      line-height: 1.5;
+    }
+
+    /* ── Error toast ──────────────────────────────────────────── */
+    .error-banner {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 7px;
+      padding: 12px 16px;
+      color: #991b1b;
+      font-size: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .error-banner svg { flex-shrink: 0; margin-top: 1px; }
+
+    /* ── History table ────────────────────────────────────────── */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead tr { background: #f8fafc; }
+    thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .12s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+    tbody td { padding: 11px 14px; color: var(--text); }
+    tbody td.muted { color: var(--muted); font-size: 12px; }
+
+    .expand-row { display: none; background: #f8fafc; }
+    .expand-row.open { display: table-row; }
+    .expand-row td { padding: 0; }
+    .expand-inner {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .expand-field label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .expand-field p { font-size: 12.5px; word-break: break-all; }
+    .expand-field.full { grid-column: 1 / -1; }
+
+    .empty-state {
+      padding: 56px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty-state svg { margin-bottom: 14px; opacity: .35; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── Smoke test section ───────────────────────────────────── */
+    .smoke-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .smoke-header h3 { font-size: 15px; font-weight: 600; }
+
+    .smoke-cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .smoke-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .smoke-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .smoke-card-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .smoke-card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .chip {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #e2e8f0;
+      color: var(--muted);
+    }
+    .chip.blue { background: #dbeafe; color: #1d4ed8; }
+    .chip.green { background: #dcfce7; color: #15803d; }
+    .chip.yellow { background: #fef9c3; color: #a16207; }
+    .chip.red { background: #fee2e2; color: #b91c1c; }
+
+    .expected-line {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .expected-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .exp-approve  { background: var(--approve);  color: white; }
+    .exp-escalate { background: var(--escalate); color: white; }
+    .exp-reject   { background: var(--reject);   color: white; }
+
+    .smoke-result {
+      padding: 10px 14px;
+      border-radius: 7px;
+      font-size: 12.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .smoke-result.pass { background: #f0fdf4; color: #15803d; }
+    .smoke-result.fail { background: #fef2f2; color: #b91c1c; }
+    .smoke-result.running { background: #eff6ff; color: #1d4ed8; }
+
+    .passfail-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: currentColor;
+    }
+    .pass .passfail-badge { background: var(--approve); color: white; }
+    .fail .passfail-badge { background: var(--reject); color: white; }
+
+    .run-all-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .run-all-bar p { font-size: 13px; color: var(--muted); }
+    .run-all-summary {
+      display: flex;
+      gap: 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .run-all-summary .pass-count { color: var(--approve); }
+    .run-all-summary .fail-count { color: var(--reject); }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      #sidebar { transform: translateX(-100%); }
+      #main { margin-left: 0; }
+      .form-grid, .smoke-cards-grid { grid-template-columns: 1fr; }
+      .result-grid { grid-template-columns: 1fr; }
+      .expand-inner { grid-template-columns: 1fr 1fr; }
+      .content { padding: 20px 16px; }
+    }
+    @media (max-width: 600px) {
+      .form-grid.three { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ── Section page title ───────────────────────────────────── */
+    .section-header {
+      margin-bottom: 22px;
+    }
+    .section-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .section-header p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Monospace fields */
+    .mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; }
+
+    /* ── Util ──────────────────────────────────────────────────── */
+    .mt-4 { margin-top: 16px; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .gap-2 { gap: 8px; }
+    .w-full { width: 100%; }
+    .text-right { text-align: right; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════════════════════════ -->
+<aside id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-mark">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+    <h1>ClearFlowHR</h1>
+    <p>AER Dashboard · v1.0</p>
+  </div>
+
+  <nav>
+    <div class="nav-label">Workspace</div>
+    <a id="nav-evaluate" class="active" onclick="navigate('evaluate')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+      </svg>
+      Evaluate Request
+    </a>
+    <a id="nav-history" onclick="navigate('history')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      History
+      <span id="history-count" style="margin-left:auto; font-size:11px; background:rgba(148,163,184,.2); color:#94a3b8; border-radius:20px; padding:1px 8px; font-weight:700;"></span>
+    </a>
+    <a id="nav-smoke" onclick="navigate('smoke')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      Smoke Tests
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <p>Backend: <strong style="color:#60a5fa">localhost:4647</strong></p>
+    <p style="margin-top:4px">POST /api/v1/evaluate</p>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN
+═══════════════════════════════════════════════════════════ -->
+<div id="main">
+  <div class="topbar">
+    <h2 id="topbar-title">Evaluate Leave Request</h2>
+    <div class="status-dot">
+      <span class="dot"></span>
+      AER Engine Online
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── SECTION: EVALUATE ─────────────────────────────── -->
+    <section id="section-evaluate" class="section active">
+      <div class="section-header">
+        <h2>Submit Leave Request</h2>
+        <p>Fill in employee details and leave parameters to receive an automated AER decision.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          Employee Information
+        </div>
+        <form id="eval-form" onsubmit="submitEval(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Employee Name</label>
+              <input type="text" id="f-name" value="Nguyen Van A" required maxlength="120" />
+            </div>
+            <div class="form-group">
+              <label>Employment Status</label>
+              <select id="f-status">
+                <option value="CONFIRMED">CONFIRMED</option>
+                <option value="PROBATION">PROBATION</option>
+                <option value="CONTRACT">CONTRACT</option>
+                <option value="RESIGNED">RESIGNED</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid" style="margin-top:16px">
+            <div class="form-section-header">Leave Details</div>
+            <div class="form-group">
+              <label>Leave Type</label>
+              <select id="f-leave-type">
+                <option value="ANNUAL">ANNUAL</option>
+                <option value="SICK">SICK</option>
+                <option value="MATERNITY">MATERNITY</option>
+                <option value="PATERNITY">PATERNITY</option>
+                <option value="UNPAID">UNPAID</option>
+                <option value="COMPASSIONATE">COMPASSIONATE</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Days Requested</label>
+              <input type="number" id="f-days" value="3" min="1" required />
+            </div>
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="date" id="f-start" required />
+            </div>
+            <div class="form-group">
+              <label>End Date</label>
+              <input type="date" id="f-end" required />
+            </div>
+          </div>
+
+          <div class="form-grid three" style="margin-top:16px">
+            <div class="form-section-header">Leave Balance Snapshot <span style="font-weight:400;color:#94a3b8">(from HRM)</span></div>
+            <div class="form-group">
+              <label>Annual Days Remaining</label>
+              <input type="number" id="f-annual" value="10" min="0" required />
+            </div>
+            <div class="form-group">
+              <label>Sick Days Remaining</label>
+              <input type="number" id="f-sick" value="30" min="0" required />
+            </div>
+            <div class="form-group">
+              <label>Maternity Weeks Remaining</label>
+              <input type="number" id="f-mat" value="26" min="0" required />
+            </div>
+            <div class="form-group">
+              <label>Unpaid Days Used YTD</label>
+              <input type="number" id="f-unpaid" value="0" min="0" required />
+            </div>
+          </div>
+
+          <div style="margin-top:22px; display:flex; gap:10px; align-items:center">
+            <button type="submit" class="btn btn-primary" id="submit-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+              Submit Request
+            </button>
+            <button type="button" class="btn btn-outline" onclick="resetForm()">Reset</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Result -->
+      <div id="result-area"></div>
+    </section>
+
+    <!-- ── SECTION: HISTORY ───────────────────────────────── -->
+    <section id="section-history" class="section">
+      <div class="section-header">
+        <h2>Evaluation History</h2>
+        <p>Last 20 evaluations stored locally in your browser.</p>
+      </div>
+
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div id="history-content"></div>
+      </div>
+    </section>
+
+    <!-- ── SECTION: SMOKE TESTS ───────────────────────────── -->
+    <section id="section-smoke" class="section">
+      <div class="section-header">
+        <h2>Smoke Tests</h2>
+        <p>5 curated deterministic scenarios to verify the AER rules engine.</p>
+      </div>
+
+      <div class="run-all-bar">
+        <div>
+          <p style="font-weight:600; color:var(--text); font-size:13.5px">Run All 5 Smoke Tests</p>
+          <p>Executes all cases sequentially against the live backend.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:14px">
+          <div class="run-all-summary" id="run-all-summary" style="display:none">
+            <span class="pass-count" id="sum-pass">✓ 0 Passed</span>
+            <span class="fail-count" id="sum-fail">✗ 0 Failed</span>
+          </div>
+          <button class="btn btn-primary" id="run-all-btn" onclick="runAllSmoke()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Run All 5
+          </button>
+        </div>
+      </div>
+
+      <div class="smoke-cards-grid" id="smoke-grid"></div>
+    </section>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+  'use strict';
+
+  // ── Constants ──────────────────────────────────────────────
+  const API_BASE     = 'http://localhost:4647';
+  const EMPLOYEE_ID  = '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4d';
+  const HISTORY_KEY  = 'aer_history_v1';
+  const MAX_HISTORY  = 20;
+
+  // ── Date helpers ───────────────────────────────────────────
+  function toISODate(d) {
+    return d.toISOString().split('T')[0];
+  }
+
+  function initDates() {
+    const today = new Date();
+    const plus3  = new Date(today);
+    plus3.setDate(plus3.getDate() + 3);
+    document.getElementById('f-start').value = toISODate(today);
+    document.getElementById('f-end').value   = toISODate(plus3);
+  }
+  initDates();
+
+  // ── Navigation ─────────────────────────────────────────────
+  const sections = { evaluate: 'Evaluate Leave Request', history: 'Evaluation History', smoke: 'Smoke Tests' };
+
+  function navigate(key) {
+    Object.keys(sections).forEach(k => {
+      document.getElementById('section-' + k).classList.toggle('active', k === key);
+      document.getElementById('nav-' + k).classList.toggle('active', k === key);
+    });
+    document.getElementById('topbar-title').textContent = sections[key];
+    if (key === 'history') renderHistory();
+  }
+
+  // ── Local storage history ──────────────────────────────────
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+    catch { return []; }
+  }
+
+  function saveHistory(items) {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, MAX_HISTORY)));
+  }
+
+  function addHistory(entry) {
+    const items = loadHistory();
+    items.unshift(entry);
+    saveHistory(items);
+    updateHistoryCount();
+  }
+
+  function updateHistoryCount() {
+    const n = loadHistory().length;
+    const el = document.getElementById('history-count');
+    el.textContent = n > 0 ? n : '';
+  }
+  updateHistoryCount();
+
+  // ── SVG helpers ────────────────────────────────────────────
+  const CHECK_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const WARN_ICON  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+  const X_ICON     = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  const ERR_ICON   = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+  // ── Outcome helpers ────────────────────────────────────────
+  function outcomeClass(o) {
+    if (o === 'AUTO_APPROVE') return 'approve';
+    if (o === 'ESCALATE')     return 'escalate';
+    return 'reject';
+  }
+  function outcomeBadgeClass(o) {
+    if (o === 'AUTO_APPROVE') return 'badge-approve';
+    if (o === 'ESCALATE')     return 'badge-escalate';
+    return 'badge-reject';
+  }
+  function outcomeIcon(o) {
+    if (o === 'AUTO_APPROVE') return CHECK_ICON;
+    if (o === 'ESCALATE')     return WARN_ICON;
+    return X_ICON;
+  }
+  function formatTime(iso) {
+    try {
+      return new Date(iso).toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    } catch { return iso; }
+  }
+  function short(str, n=16) {
+    return str && str.length > n ? str.slice(0, n) + '…' : str;
+  }
+
+  // ── Build API payload ──────────────────────────────────────
+  function buildPayload(overrides = {}) {
+    const base = {
+      request_id:        crypto.randomUUID(),
+      employee_id:       EMPLOYEE_ID,
+      employee_name:     document.getElementById('f-name').value.trim(),
+      employment_status: document.getElementById('f-status').value,
+      leave_type:        document.getElementById('f-leave-type').value,
+      start_date:        document.getElementById('f-start').value,
+      end_date:          document.getElementById('f-end').value,
+      days_requested:    parseInt(document.getElementById('f-days').value, 10),
+      leave_balance: {
+        annual_days_remaining:    parseInt(document.getElementById('f-annual').value, 10),
+        sick_days_remaining:      parseInt(document.getElementById('f-sick').value, 10),
+        maternity_weeks_remaining:parseInt(document.getElementById('f-mat').value, 10),
+        unpaid_days_used_ytd:     parseInt(document.getElementById('f-unpaid').value, 10),
+      },
+      attached_documents: [],
+      submitted_at: new Date().toISOString(),
+    };
+    return Object.assign(base, overrides);
+  }
+
+  // ── Call API ───────────────────────────────────────────────
+  async function callEvaluate(payload) {
+    const resp = await fetch(`${API_BASE}/api/v1/evaluate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data?.message || data?.error || `HTTP ${resp.status}`);
+    return data;
+  }
+
+  // ── Render result card ─────────────────────────────────────
+  function renderResult(result, container) {
+    const cls  = outcomeClass(result.outcome);
+    const bcls = outcomeBadgeClass(result.outcome);
+    const icon = outcomeIcon(result.outcome);
+    const receipt = result.cryptographic_receipt
+      ? short(result.cryptographic_receipt, 16) + '...'
+      : '—';
+
+    const escalationHtml = result.escalation_question
+      ? `<div class="result-field full">
+           <label>Escalation Question</label>
+           <div class="escalation-box">${escHtml(result.escalation_question)}</div>
+         </div>`
+      : '';
+
+    container.innerHTML = `
+      <div class="result-card ${cls}">
+        <div class="result-card-header">
+          <span class="outcome-badge ${bcls}">${icon} ${escHtml(result.outcome)}</span>
+          ${result.uncertainty_category && result.uncertainty_category !== 'NONE'
+            ? `<span class="chip yellow">${escHtml(result.uncertainty_category)}</span>`
+            : ''}
+        </div>
+        <div class="result-grid">
+          <div class="result-field full">
+            <label>Policy Basis</label>
+            <p>${escHtml(result.policy_basis)}</p>
+          </div>
+          ${escalationHtml}
+          <div class="result-field">
+            <label>Decision ID</label>
+            <p class="mono">${short(result.decision_id, 18)}…</p>
+          </div>
+          <div class="result-field">
+            <label>Evaluated At</label>
+            <p>${formatTime(result.evaluated_at)}</p>
+          </div>
+          <div class="result-field full">
+            <label>Cryptographic Receipt</label>
+            <p class="mono">${escHtml(receipt)}</p>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderError(msg, container) {
+    container.innerHTML = `
+      <div class="error-banner">
+        ${ERR_ICON}
+        <div>
+          <strong>Request Failed</strong><br/>
+          <span style="font-size:12.5px">${escHtml(msg)}</span>
+        </div>
+      </div>`;
+  }
+
+  function escHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // ── Evaluate form submit ───────────────────────────────────
+  async function submitEval(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const area = document.getElementById('result-area');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Evaluating…`;
+    area.innerHTML = '';
+
+    try {
+      const payload = buildPayload();
+      const result  = await callEvaluate(payload);
+
+      // save history
+      addHistory({
+        time:          result.evaluated_at || new Date().toISOString(),
+        employee_name: payload.employee_name,
+        leave_type:    payload.leave_type,
+        days:          payload.days_requested,
+        outcome:       result.outcome,
+        decision_id:   result.decision_id,
+        uncertainty_category: result.uncertainty_category,
+        policy_basis:  result.policy_basis,
+        escalation_question:  result.escalation_question || null,
+        cryptographic_receipt: result.cryptographic_receipt,
+        evaluated_at:  result.evaluated_at,
+      });
+      updateHistoryCount();
+      renderResult(result, area);
+    } catch (err) {
+      renderError(err.message, area);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Request`;
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('eval-form').reset();
+    initDates();
+    document.getElementById('result-area').innerHTML = '';
+  }
+
+  // ── History rendering ──────────────────────────────────────
+  function renderHistory() {
+    const items = loadHistory();
+    const cont  = document.getElementById('history-content');
+
+    if (items.length === 0) {
+      cont.innerHTML = `
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <p>No evaluations yet. Submit a request to see history here.</p>
+        </div>`;
+      return;
+    }
+
+    let rows = '';
+    items.forEach((item, idx) => {
+      const cls  = outcomeClass(item.outcome);
+      const bcls = outcomeBadgeClass(item.outcome);
+      const unc  = item.uncertainty_category && item.uncertainty_category !== 'NONE'
+        ? `<span class="chip yellow" style="margin-left:6px;font-size:10px">${escHtml(item.uncertainty_category)}</span>` : '';
+      const escQ = item.escalation_question
+        ? `<div class="expand-field full"><label>Escalation Question</label><p>${escHtml(item.escalation_question)}</p></div>` : '';
+
+      rows += `
+        <tr onclick="toggleExpand(${idx})" title="Click to expand">
+          <td class="muted">${formatTime(item.time)}</td>
+          <td>${escHtml(item.employee_name)}</td>
+          <td><span class="chip blue">${escHtml(item.leave_type)}</span></td>
+          <td>${item.days}d</td>
+          <td><span class="outcome-badge ${bcls}" style="font-size:11px; padding:3px 10px">${outcomeIcon(item.outcome)} ${escHtml(item.outcome)}</span>${unc}</td>
+          <td class="muted mono">${short(item.decision_id, 8)}…</td>
+        </tr>
+        <tr class="expand-row" id="exp-${idx}">
+          <td colspan="6">
+            <div class="expand-inner">
+              <div class="expand-field">
+                <label>Decision ID</label>
+                <p class="mono">${escHtml(item.decision_id)}</p>
+              </div>
+              <div class="expand-field">
+                <label>Evaluated At</label>
+                <p>${formatTime(item.evaluated_at)}</p>
+              </div>
+              <div class="expand-field">
+                <label>Uncertainty</label>
+                <p>${escHtml(item.uncertainty_category)}</p>
+              </div>
+              <div class="expand-field full">
+                <label>Policy Basis</label>
+                <p>${escHtml(item.policy_basis)}</p>
+              </div>
+              ${escQ}
+              <div class="expand-field full">
+                <label>Cryptographic Receipt</label>
+                <p class="mono">${escHtml(item.cryptographic_receipt)}</p>
+              </div>
+            </div>
+          </td>
+        </tr>`;
+    });
+
+    cont.innerHTML = `
+      <div style="padding:14px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center">
+        <span style="font-size:13px; font-weight:600; color:var(--text)">${items.length} Evaluation${items.length !== 1 ? 's' : ''}</span>
+        <button class="btn btn-outline btn-sm" onclick="clearHistory()">Clear All</button>
+      </div>
+      <div class="table-wrapper" style="border:none; border-radius:0">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Employee</th>
+              <th>Leave Type</th>
+              <th>Days</th>
+              <th>Outcome</th>
+              <th>Decision ID</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function toggleExpand(idx) {
+    const row = document.getElementById('exp-' + idx);
+    if (row) row.classList.toggle('open');
+  }
+
+  function clearHistory() {
+    if (!confirm('Clear all evaluation history?')) return;
+    localStorage.removeItem(HISTORY_KEY);
+    updateHistoryCount();
+    renderHistory();
+  }
+
+  // ── Smoke tests ────────────────────────────────────────────
+  const SMOKE_CASES = [
+    {
+      id: 'sc1',
+      title: 'Confirmed employee — standard annual leave',
+      desc: 'CONFIRMED status + ANNUAL leave + 3 days within balance should pass all eligibility and balance checks.',
+      tags: [['CONFIRMED','blue'],['ANNUAL','blue'],['3 days','']],
+      expected: 'AUTO_APPROVE',
+      payload: {
+        employee_name:     'Smoke Test User 1',
+        employment_status: 'CONFIRMED',
+        leave_type:        'ANNUAL',
+        days_requested:    3,
+        start_date:        toISODate(new Date()),
+        end_date:          toISODate(new Date(Date.now() + 2*864e5)),
+        leave_balance: { annual_days_remaining: 10, sick_days_remaining: 30, maternity_weeks_remaining: 0, unpaid_days_used_ytd: 0 },
+      }
+    },
+    {
+      id: 'sc2',
+      title: 'Probationary employee — annual leave (Article 8.2)',
+      desc: 'PROBATION status bars paid annual leave per Article 8.2. Should be hard-rejected.',
+      tags: [['PROBATION','red'],['ANNUAL','blue'],['2 days','']],
+      expected: 'REJECT',
+      expectedNote: 'Article 8.2',
+      payload: {
+        employee_name:     'Smoke Test User 2',
+        employment_status: 'PROBATION',
+        leave_type:        'ANNUAL',
+        days_requested:    2,
+        start_date:        toISODate(new Date()),
+        end_date:          toISODate(new Date(Date.now() + 864e5)),
+        leave_balance: { annual_days_remaining: 10, sick_days_remaining: 30, maternity_weeks_remaining: 0, unpaid_days_used_ytd: 0 },
+      }
+    },
+    {
+      id: 'sc3',
+      title: 'Resigned employee — sick leave (Article 9.1)',
+      desc: 'RESIGNED status invalidates all leave entitlements per Article 9.1. Should be rejected.',
+      tags: [['RESIGNED','red'],['SICK','blue'],['3 days','']],
+      expected: 'REJECT',
+      expectedNote: 'Article 9.1',
+      payload: {
+        employee_name:     'Smoke Test User 3',
+        employment_status: 'RESIGNED',
+        leave_type:        'SICK',
+        days_requested:    3,
+        start_date:        toISODate(new Date()),
+        end_date:          toISODate(new Date(Date.now() + 2*864e5)),
+        leave_balance: { annual_days_remaining: 5, sick_days_remaining: 30, maternity_weeks_remaining: 0, unpaid_days_used_ytd: 0 },
+      }
+    },
+    {
+      id: 'sc4',
+      title: 'Confirmed + annual — authority limit exceeded',
+      desc: 'CONFIRMED employee requesting 8 days exceeds single-approver authority. Requires HITL escalation (U3_AUTHORITY).',
+      tags: [['CONFIRMED','blue'],['ANNUAL','blue'],['8 days','yellow']],
+      expected: 'ESCALATE',
+      expectedNote: 'U3_AUTHORITY',
+      payload: {
+        employee_name:     'Smoke Test User 4',
+        employment_status: 'CONFIRMED',
+        leave_type:        'ANNUAL',
+        days_requested:    8,
+        start_date:        toISODate(new Date()),
+        end_date:          toISODate(new Date(Date.now() + 7*864e5)),
+        leave_balance: { annual_days_remaining: 15, sick_days_remaining: 30, maternity_weeks_remaining: 0, unpaid_days_used_ytd: 0 },
+      }
+    },
+    {
+      id: 'sc5',
+      title: 'Probationary + maternity — policy ambiguity',
+      desc: 'PROBATION employee requesting 84 days MATERNITY leave creates policy conflict. Escalates as U2_POLICY.',
+      tags: [['PROBATION','red'],['MATERNITY','blue'],['84 days','yellow']],
+      expected: 'ESCALATE',
+      expectedNote: 'U2_POLICY',
+      payload: {
+        employee_name:     'Smoke Test User 5',
+        employment_status: 'PROBATION',
+        leave_type:        'MATERNITY',
+        days_requested:    84,
+        start_date:        toISODate(new Date()),
+        end_date:          toISODate(new Date(Date.now() + 83*864e5)),
+        leave_balance: { annual_days_remaining: 0, sick_days_remaining: 30, maternity_weeks_remaining: 26, unpaid_days_used_ytd: 0 },
+      }
+    },
+  ];
+
+  function expectedBadge(sc) {
+    const o = sc.expected;
+    const cls = o === 'AUTO_APPROVE' ? 'exp-approve' : o === 'ESCALATE' ? 'exp-escalate' : 'exp-reject';
+    const note = sc.expectedNote ? ` <span style="font-weight:500;font-size:10.5px">(${escHtml(sc.expectedNote)})</span>` : '';
+    return `<span class="expected-badge ${cls}">${escHtml(o)}</span>${note}`;
+  }
+
+  function renderSmokeGrid() {
+    const grid = document.getElementById('smoke-grid');
+    grid.innerHTML = SMOKE_CASES.map((sc, i) => {
+      const tagsHtml = sc.tags.map(([t,c]) => `<span class="chip ${c}">${escHtml(t)}</span>`).join('');
+      return `
+        <div class="smoke-card" id="scard-${sc.id}">
+          <div class="smoke-card-top">
+            <div style="flex:1">
+              <div class="smoke-card-title">${escHtml(sc.title)}</div>
+              <div class="smoke-card-meta">${tagsHtml}</div>
+            </div>
+            <button class="btn btn-outline btn-sm" id="sbtn-${sc.id}" onclick="runSmoke('${sc.id}', ${i})">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Run
+            </button>
+          </div>
+          <p style="font-size:12px; color:var(--muted); line-height:1.5">${escHtml(sc.desc)}</p>
+          <div class="expected-line">
+            Expected: ${expectedBadge(sc)}
+          </div>
+          <div id="sres-${sc.id}"></div>
+        </div>`;
+    }).join('');
+  }
+  renderSmokeGrid();
+
+  async function runSmoke(id, idx) {
+    const sc   = SMOKE_CASES[idx];
+    const btn  = document.getElementById('sbtn-' + id);
+    const res  = document.getElementById('sres-' + id);
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner dark" style="width:12px;height:12px;border-width:2px"></span>`;
+    res.innerHTML = `<div class="smoke-result running"><span class="spinner dark" style="width:12px;height:12px;border-width:2px"></span> Running…</div>`;
+
+    const payload = Object.assign({
+      request_id:        crypto.randomUUID(),
+      employee_id:       EMPLOYEE_ID,
+      attached_documents:[],
+      submitted_at:      new Date().toISOString(),
+    }, sc.payload);
+
+    let actual = null;
+    let errMsg = null;
+    try {
+      const result = await callEvaluate(payload);
+      actual = result.outcome;
+      const pass = actual === sc.expected;
+      const passCls = pass ? 'pass' : 'fail';
+      res.innerHTML = `
+        <div class="smoke-result ${passCls}">
+          <span class="passfail-badge">${pass ? '✓ PASS' : '✗ FAIL'}</span>
+          <span style="flex:1">Got <strong>${escHtml(actual)}</strong>
+            ${result.uncertainty_category && result.uncertainty_category !== 'NONE'
+              ? `· ${escHtml(result.uncertainty_category)}` : ''}
+          </span>
+        </div>
+        <div style="margin-top:8px; font-size:11.5px; color:var(--muted); line-height:1.5">
+          ${escHtml(result.policy_basis)}
+        </div>`;
+    } catch (err) {
+      errMsg = err.message;
+      res.innerHTML = `<div class="smoke-result fail">${ERR_ICON} <span>Error: ${escHtml(err.message)}</span></div>`;
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Re-run`;
+    return { pass: actual === sc.expected && !errMsg, actual, errMsg };
+  }
+
+  async function runAllSmoke() {
+    const btn    = document.getElementById('run-all-btn');
+    const sumDiv = document.getElementById('run-all-summary');
+    const sumPass = document.getElementById('sum-pass');
+    const sumFail = document.getElementById('sum-fail');
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Running…`;
+    sumDiv.style.display = 'none';
+
+    let passed = 0, failed = 0;
+    for (let i = 0; i < SMOKE_CASES.length; i++) {
+      const sc = SMOKE_CASES[i];
+      const { pass } = await runSmoke(sc.id, i);
+      if (pass) passed++; else failed++;
+    }
+
+    sumPass.textContent = `✓ ${passed} Passed`;
+    sumFail.textContent = `✗ ${failed} Failed`;
+    sumDiv.style.display = 'flex';
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run All 5`;
+  }
+</script>
+
+</body>
+</html>
