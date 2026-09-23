@@ -1,8 +1,9 @@
 /**
  * @file vlm_parser.ts
- * @description Local Vision-Language Model (VLM) integration for C65-HD form analysis.
+ * @description Vision-Language Model (VLM) integration for C65-HD form analysis via OpenRouter.
  *
- * Model: Qwen2.5-VL (running locally via Ollama or similar local inference runtime).
+ * Model: Uses OpenRouter's vision-capable model (google/gemini-flash-1.5) for OCR.
+ * Falls back gracefully when the API key is absent or the call fails.
  *
  * Responsibilities:
  *   - Detect red official stamps on C65-HD medical/legal forms.
@@ -14,12 +15,11 @@
  *   - VLM MUST NOT be used to interpret policy, calculate dates, or verify labor law compliance.
  *   - On VLM timeout or image quality failure → workflow transitions to ESCALATE with U1_DATA.
  *   - Missing dates from blurry images MUST NOT be imputed by LLM.
- *
- * NOTE: Full VLM client implementation is deferred to Phase 3.
- *       This stub provides typed interfaces and the safe failure-open guard contract.
+ *   - The model response is parsed as structured JSON; free-text reasoning is discarded.
  */
 
 import type { AttachedDocument } from "../api/routes/schemas.js";
+import { callOpenRouter, getApiKey } from "./openrouter_client.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // VLM Analysis Result Types
@@ -51,54 +51,186 @@ export type VlmParseOutcome =
     };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// VLM Parser (Stub)
+// Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Minimum acceptable confidence score for a VLM result to be trusted. */
 const CONFIDENCE_THRESHOLD = 0.70;
 
 /** VLM request timeout in milliseconds. */
-const VLM_TIMEOUT_MS = 5_000;
+const VLM_TIMEOUT_MS = parseInt(process.env["VLM_TIMEOUT_MS"] ?? "15000", 10);
 
 /**
- * Parses an attached document using the local Qwen2.5-VL model.
+ * OpenRouter model used for vision/OCR tasks.
+ * Uses google/gemma-4-26b-a4b-it (or VLM_MODEL from env) for multimodal document analysis.
+ */
+const VLM_MODEL = process.env["VLM_MODEL"] ?? "google/gemma-4-26b-a4b-it";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// System prompt — structural extraction only, no policy reasoning
+// ─────────────────────────────────────────────────────────────────────────────
+
+const VLM_SYSTEM_PROMPT = `\
+You are a document layout analysis tool for Vietnamese HR medical forms (C65-HD standard).
+Your ONLY job is to detect specific visual elements and extract dates/authority names.
+You MUST NOT interpret policy, calculate leave entitlements, or make decisions.
+You MUST NOT impute or guess missing dates — return null if a field is unreadable.
+
+Respond ONLY with a valid JSON object using this exact schema (no markdown, no prose):
+{
+  "red_stamp_detected": boolean,
+  "signature_detected": boolean,
+  "confidence_score": number (0.0 to 1.0, based on image clarity),
+  "extracted_issue_date": "YYYY-MM-DD" | null,
+  "extracted_issuing_authority": string | null
+}`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VLM Parser
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Parses an attached document using the OpenRouter vision API.
  *
  * Per AGENTS.md §5 Failure Handling:
- *   - If the VLM times out → returns failure with "TIMEOUT".
- *   - If the image is too blurry (confidence < threshold) → returns "IMAGE_QUALITY_TOO_LOW".
- *   - Both failures MUST cause the calling workflow to ESCALATE with U1_DATA.
+ *   - If the API key is absent → returns MODEL_UNAVAILABLE (triggers U1_DATA escalation).
+ *   - If the request times out → returns TIMEOUT.
+ *   - If the image confidence is below threshold → returns IMAGE_QUALITY_TOO_LOW.
+ *   - If the MIME type is unsupported → returns UNSUPPORTED_FORMAT.
+ *   - All failures MUST cause the calling workflow to ESCALATE with U1_DATA.
  *
  * @param document - The attached document to analyze.
  * @returns A VlmParseOutcome discriminated union.
- *
- * @stub Full Qwen2.5-VL client implementation is Phase 3.
  */
 export async function parseDocument(
   document: AttachedDocument
 ): Promise<VlmParseOutcome> {
-  // TODO (Phase 3): Implement actual Qwen2.5-VL inference call via local API.
-  // The implementation must:
-  //   1. Send the document image to the local VLM endpoint with VLM_TIMEOUT_MS.
-  //   2. Parse the structured JSON response from the model.
-  //   3. If confidence_score < CONFIDENCE_THRESHOLD, return IMAGE_QUALITY_TOO_LOW.
-  //   4. Never attempt to impute missing dates — return null for extracted_issue_date.
+  // Guard: unsupported format (PDFs cannot be sent as image_url to vision models)
+  if (document.mime_type === "application/pdf") {
+    return {
+      success: false,
+      failure_reason: "UNSUPPORTED_FORMAT",
+      document_id: document.document_id,
+    };
+  }
 
-  void document;       // suppress unused-parameter lint in stub
-  void CONFIDENCE_THRESHOLD;
-  void VLM_TIMEOUT_MS;
+  // Guard: no API key configured → safe failure
+  if (!getApiKey()) {
+    console.warn(
+      `[AER/vlm_parser] OPENROUTER_API_KEY not set — escalating document ${document.document_id} as MODEL_UNAVAILABLE`
+    );
+    return {
+      success: false,
+      failure_reason: "MODEL_UNAVAILABLE",
+      document_id: document.document_id,
+    };
+  }
 
-  // Stub always returns a safe failure → guarantees U1_DATA escalation in tests
-  // until real implementation is wired.
-  return {
-    success: false,
-    failure_reason: "MODEL_UNAVAILABLE",
-    document_id: document.document_id,
-  };
+  try {
+    const response = await callOpenRouter(
+      {
+        model: VLM_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: VLM_SYSTEM_PROMPT,
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  // content_ref is either a base64 data URI or a secure URL
+                  url: document.content_ref,
+                },
+              },
+              {
+                type: "text",
+                text: "Analyze this C65-HD form. Return only the JSON object as specified.",
+              },
+            ],
+          },
+        ],
+        max_tokens: 256,
+        temperature: 0, // deterministic extraction — no creative variance
+      },
+      VLM_TIMEOUT_MS
+    );
+
+    const rawContent = response.choices[0]?.message?.content ?? "";
+
+    // Extract JSON object substring, ignoring any reasoning or wrapper text
+    const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+    const jsonText = jsonMatch ? jsonMatch[0] : rawContent.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+
+    let parsed: {
+      red_stamp_detected: boolean;
+      signature_detected: boolean;
+      confidence_score: number;
+      extracted_issue_date: string | null;
+      extracted_issuing_authority: string | null;
+    };
+
+    try {
+      parsed = JSON.parse(jsonText) as typeof parsed;
+    } catch {
+      console.error(
+        `[AER/vlm_parser] Failed to parse VLM JSON response for document ${document.document_id}:`,
+        rawContent
+      );
+      // Treat as data uncertainty — do not fail open
+      return {
+        success: false,
+        failure_reason: "IMAGE_QUALITY_TOO_LOW",
+        document_id: document.document_id,
+      };
+    }
+
+    // Enforce confidence threshold
+    if (parsed.confidence_score < CONFIDENCE_THRESHOLD) {
+      return {
+        success: false,
+        failure_reason: "IMAGE_QUALITY_TOO_LOW",
+        document_id: document.document_id,
+      };
+    }
+
+    return {
+      success: true,
+      result: {
+        document_id: document.document_id,
+        red_stamp_detected: Boolean(parsed.red_stamp_detected),
+        signature_detected: Boolean(parsed.signature_detected),
+        confidence_score: parsed.confidence_score,
+        // Safety: never accept a date that doesn't match ISO format — imputed dates are forbidden
+        extracted_issue_date:
+          typeof parsed.extracted_issue_date === "string" &&
+          /^\d{4}-\d{2}-\d{2}$/.test(parsed.extracted_issue_date)
+            ? parsed.extracted_issue_date
+            : null,
+        extracted_issuing_authority:
+          typeof parsed.extracted_issuing_authority === "string" &&
+          parsed.extracted_issuing_authority.trim().length > 0
+            ? parsed.extracted_issuing_authority.trim()
+            : null,
+      },
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const isTimeout = message.includes("aborted") || message.includes("abort");
+    console.error(`[AER/vlm_parser] VLM call failed for document ${document.document_id}:`, message);
+    return {
+      success: false,
+      failure_reason: isTimeout ? "TIMEOUT" : "MODEL_UNAVAILABLE",
+      document_id: document.document_id,
+    };
+  }
 }
 
 /**
  * Analyzes all attached documents for a leave request.
- * Returns the first failure encountered, or an array of all successful results.
+ * Returns an array of VlmParseOutcome (one per document).
  *
  * @param documents - Array of attached documents from EmployeeLeaveRequest.
  * @returns Array of VlmParseOutcome (one per document).

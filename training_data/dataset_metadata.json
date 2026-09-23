@@ -1,0 +1,25 @@
+{
+  "dataset": "ClearFlowHR synthetic Vietnamese leave-form OCR dataset",
+  "version": "1.0",
+  "synthetic": true,
+  "image_count": 50,
+  "language": "vi",
+  "image_format": "PNG",
+  "files": {
+    "ocr_tags": "tags_ocr.jsonl",
+    "clearflowhr_requests": "tags_clearflowhr_request.jsonl",
+    "expected_results": "tags_clearflowhr_expected_result.jsonl"
+  },
+  "result_distribution": {
+    "AUTO_APPROVE": 37,
+    "REJECT": 1,
+    "ESCALATE": 12
+  },
+  "uncertainty_distribution": {
+    "NONE": 38,
+    "U1_DATA": 5,
+    "U2_POLICY": 0,
+    "U3_AUTHORITY": 7
+  },
+  "warning": "All names, addresses, phone numbers and signatures are synthetic. Expected results are derived from the repository's documented rules and are not execution logs."
+}

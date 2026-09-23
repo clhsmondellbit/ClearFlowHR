@@ -8,12 +8,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    /* ── Reset & Base ─────────────────────────────────────────── */
+    /* ── Reset & Base ──────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --sidebar-bg:   #1e293b;
-      --sidebar-w:    260px;
+      --sidebar-bg:   #0f172a;
+      --sidebar-w:    264px;
       --accent:       #3b82f6;
       --accent-hover: #2563eb;
       --approve:      #22c55e;
@@ -25,20 +25,20 @@
       --muted:        #64748b;
       --border:       #e2e8f0;
       --radius:       10px;
-      --shadow:       0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+      --shadow:       0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+      --shadow-md:    0 4px 6px rgba(0,0,0,.07), 0 10px 30px rgba(0,0,0,.08);
     }
 
     html, body { height: 100%; font-family: 'Inter', sans-serif; color: var(--text); }
     body { display: flex; background: var(--bg); }
 
-    /* ── Sidebar ──────────────────────────────────────────────── */
+    /* ── Sidebar ────────────────────────────────────────────────── */
     #sidebar {
       width: var(--sidebar-w);
       min-width: var(--sidebar-w);
       background: var(--sidebar-bg);
       display: flex;
       flex-direction: column;
-      padding: 0;
       position: fixed;
       top: 0; left: 0;
       height: 100vh;
@@ -46,69 +46,112 @@
     }
 
     .sidebar-brand {
-      padding: 24px 20px 20px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .sidebar-brand .logo-mark {
+    .logo-mark {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 36px; height: 36px;
-      background: var(--accent);
-      border-radius: 8px;
-      margin-bottom: 10px;
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      border-radius: 10px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(59,130,246,.4);
     }
-    .sidebar-brand .logo-mark svg { color: white; }
-    .sidebar-brand h1 {
-      font-size: 13px;
+    .logo-mark svg { color: white; }
+    .sidebar-brand-text h1 {
+      font-size: 14px;
       font-weight: 700;
       color: #f8fafc;
-      line-height: 1.4;
-      letter-spacing: .01em;
+      letter-spacing: -.01em;
     }
-    .sidebar-brand p {
+    .sidebar-brand-text p {
       font-size: 11px;
-      color: #94a3b8;
-      margin-top: 2px;
-      font-weight: 400;
+      color: #475569;
+      margin-top: 1px;
     }
 
-    nav { padding: 16px 12px; flex: 1; }
-    nav .nav-label {
+    nav { padding: 14px 12px; flex: 1; overflow-y: auto; }
+    .nav-label {
       font-size: 10px;
       font-weight: 600;
-      color: #475569;
+      color: #334155;
       text-transform: uppercase;
       letter-spacing: .08em;
       padding: 0 8px;
-      margin-bottom: 6px;
+      margin: 10px 0 6px;
     }
+    .nav-label:first-child { margin-top: 0; }
     nav a {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 9px 10px;
+      padding: 8px 10px;
       border-radius: 7px;
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 500;
-      color: #94a3b8;
+      color: #64748b;
       text-decoration: none;
       cursor: pointer;
       transition: background .15s, color .15s;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
-    nav a svg { flex-shrink: 0; opacity: .75; }
-    nav a:hover { background: rgba(255,255,255,.07); color: #e2e8f0; }
-    nav a.active { background: rgba(59,130,246,.18); color: #93c5fd; }
-    nav a.active svg { opacity: 1; }
+    nav a .nav-icon { flex-shrink: 0; opacity: .6; transition: opacity .15s; }
+    nav a:hover { background: rgba(255,255,255,.06); color: #cbd5e1; }
+    nav a:hover .nav-icon { opacity: .9; }
+    nav a.active { background: rgba(59,130,246,.15); color: #93c5fd; }
+    nav a.active .nav-icon { opacity: 1; }
+
+    .nav-badge {
+      margin-left: auto;
+      font-size: 10.5px;
+      background: rgba(148,163,184,.15);
+      color: #64748b;
+      border-radius: 20px;
+      padding: 1px 8px;
+      font-weight: 700;
+    }
+    nav a.active .nav-badge { background: rgba(59,130,246,.2); color: #93c5fd; }
 
     .sidebar-footer {
-      padding: 16px 20px;
-      border-top: 1px solid rgba(255,255,255,.06);
+      padding: 14px 16px;
+      border-top: 1px solid rgba(255,255,255,.05);
     }
-    .sidebar-footer p { font-size: 11px; color: #475569; }
+    .openrouter-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border-radius: 7px;
+      background: rgba(59,130,246,.1);
+      border: 1px solid rgba(59,130,246,.2);
+      margin-bottom: 10px;
+    }
+    .openrouter-badge .or-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--approve);
+      box-shadow: 0 0 0 2px rgba(34,197,94,.25);
+      flex-shrink: 0;
+    }
+    .openrouter-badge .or-dot.offline { background: #475569; box-shadow: none; }
+    .openrouter-badge span {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #93c5fd;
+    }
+    .sidebar-footer-meta p {
+      font-size: 11px;
+      color: #334155;
+      margin-bottom: 2px;
+    }
+    .sidebar-footer-meta strong { color: #60a5fa; font-weight: 600; }
 
-    /* ── Main content ─────────────────────────────────────────── */
+    /* ── Main content ───────────────────────────────────────────── */
     #main {
       margin-left: var(--sidebar-w);
       flex: 1;
@@ -121,7 +164,7 @@
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       padding: 0 32px;
-      height: 60px;
+      height: 58px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -129,37 +172,44 @@
       top: 0;
       z-index: 50;
     }
-    .topbar h2 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .topbar .status-dot {
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .topbar-left h2 { font-size: 14.5px; font-weight: 600; color: var(--text); }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .status-indicator {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 12px;
       color: var(--muted);
+      padding: 5px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
     }
-    .topbar .status-dot span.dot {
-      width: 8px; height: 8px;
+    .status-indicator .dot {
+      width: 7px; height: 7px;
       border-radius: 50%;
       background: var(--approve);
       box-shadow: 0 0 0 3px rgba(34,197,94,.2);
-      animation: pulse 2s infinite;
+      animation: pulse 2.5s infinite;
     }
     @keyframes pulse {
       0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
-      50%      { box-shadow: 0 0 0 6px rgba(34,197,94,.08); }
+      50%      { box-shadow: 0 0 0 6px rgba(34,197,94,.06); }
     }
 
     .content { padding: 28px 32px; }
 
-    /* ── Section visibility ───────────────────────────────────── */
+    /* ── Section visibility ─────────────────────────────────────── */
     .section { display: none; }
     .section.active { display: block; }
 
-    /* ── Cards ────────────────────────────────────────────────── */
+    /* ── Section header ─────────────────────────────────────────── */
+    .section-header { margin-bottom: 24px; }
+    .section-header h2 { font-size: 21px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+    .section-header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* ── Cards ──────────────────────────────────────────────────── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -169,7 +219,7 @@
       margin-bottom: 20px;
     }
     .card-title {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--text);
       margin-bottom: 18px;
@@ -177,54 +227,71 @@
       align-items: center;
       gap: 8px;
     }
-    .card-title svg { color: var(--accent); }
-
-    /* ── Form grid ────────────────────────────────────────────── */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
+    .card-title .card-title-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: #eff6ff;
+      color: var(--accent);
+      flex-shrink: 0;
     }
+
+    /* ── Form grid ──────────────────────────────────────────────── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+    .form-grid.four  { grid-template-columns: 1fr 1fr 1fr 1fr; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group label {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .04em;
-    }
-    .form-group input,
-    .form-group select {
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      padding: 9px 12px;
-      font-size: 13.5px;
-      font-family: inherit;
-      color: var(--text);
-      background: var(--bg);
-      outline: none;
-      transition: border-color .15s, box-shadow .15s;
-    }
-    .form-group input:focus,
-    .form-group select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(59,130,246,.12);
-      background: white;
-    }
-    .form-section-header {
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 600;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: .07em;
-      padding: 6px 0 10px;
-      border-bottom: 1px solid var(--border);
-      margin: 20px 0 16px;
+      letter-spacing: .05em;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 11px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: var(--text);
+      background: #f8fafc;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+      background: white;
+    }
+    .form-section-divider {
       grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0 2px;
+    }
+    .form-section-divider span {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      white-space: nowrap;
+    }
+    .form-section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
 
-    /* ── Buttons ──────────────────────────────────────────────── */
+    /* ── Buttons ────────────────────────────────────────────────── */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -236,153 +303,121 @@
       font-family: inherit;
       cursor: pointer;
       border: none;
-      transition: background .15s, transform .1s, box-shadow .15s;
+      transition: background .15s, transform .1s, box-shadow .15s, opacity .15s;
     }
     .btn:active { transform: scale(.98); }
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-      box-shadow: 0 2px 8px rgba(59,130,246,.35);
-    }
-    .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(59,130,246,.4); }
-    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-primary { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(59,130,246,.3); }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); box-shadow: 0 4px 14px rgba(59,130,246,.4); }
+    .btn-danger  { background: var(--reject);  color: white; }
+    .btn-danger:hover:not(:disabled)  { background: #dc2626; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
     .btn-outline {
       background: transparent;
       border: 1.5px solid var(--border);
       color: var(--muted);
     }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.06); }
-    .btn-success { background: var(--approve); color: white; }
-    .btn-success:hover { background: #16a34a; }
-    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-outline:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.05); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
 
-    /* ── Spinner ──────────────────────────────────────────────── */
+    /* ── Spinner ────────────────────────────────────────────────── */
     .spinner {
-      width: 18px; height: 18px;
-      border: 2.5px solid rgba(255,255,255,.4);
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.35);
       border-top-color: white;
       border-radius: 50%;
-      animation: spin .7s linear infinite;
-      display: inline-block;
+      animation: spin .65s linear infinite;
+      display: inline-block; flex-shrink: 0;
     }
-    .spinner.dark {
-      border-color: rgba(59,130,246,.25);
-      border-top-color: var(--accent);
-    }
+    .spinner.dark { border-color: rgba(59,130,246,.2); border-top-color: var(--accent); }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Outcome result card ──────────────────────────────────── */
-    #result-area { margin-top: 24px; }
+    /* ── Result card ────────────────────────────────────────────── */
+    #result-area { margin-top: 22px; }
 
     .result-card {
       border-radius: var(--radius);
       padding: 22px 24px;
-      border-left: 5px solid;
-      position: relative;
+      border-left: 4px solid;
     }
     .result-card.approve  { background: #f0fdf4; border-color: var(--approve); }
     .result-card.escalate { background: #fffbeb; border-color: var(--escalate); }
     .result-card.reject   { background: #fef2f2; border-color: var(--reject); }
 
     .result-card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
     }
     .outcome-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .05em;
-      text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
     }
-    .badge-approve  { background: var(--approve); color: white; }
+    .badge-approve  { background: var(--approve);  color: white; }
     .badge-escalate { background: var(--escalate); color: white; }
-    .badge-reject   { background: var(--reject); color: white; }
+    .badge-reject   { background: var(--reject);   color: white; }
 
-    .result-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
+    .chip {
+      display: inline-flex; align-items: center;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      background: #e2e8f0; color: var(--muted);
     }
+    .chip.blue   { background: #dbeafe; color: #1d4ed8; }
+    .chip.green  { background: #dcfce7; color: #15803d; }
+    .chip.yellow { background: #fef9c3; color: #92400e; }
+    .chip.red    { background: #fee2e2; color: #b91c1c; }
+    .chip.purple { background: #ede9fe; color: #6d28d9; }
+    .chip.indigo { background: #e0e7ff; color: #3730a3; }
+
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .result-field label {
-      font-size: 10.5px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      display: block;
-      margin-bottom: 3px;
+      font-size: 10.5px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      display: block; margin-bottom: 4px;
     }
-    .result-field p {
-      font-size: 13px;
-      color: var(--text);
-      word-break: break-all;
-    }
+    .result-field p { font-size: 13px; color: var(--text); word-break: break-all; line-height: 1.5; }
     .result-field.full { grid-column: 1 / -1; }
+
     .escalation-box {
-      background: rgba(245,158,11,.1);
-      border: 1px solid rgba(245,158,11,.3);
+      background: rgba(245,158,11,.08);
+      border: 1px solid rgba(245,158,11,.25);
       border-radius: 7px;
       padding: 12px 14px;
-      font-size: 13px;
-      color: #92400e;
-      line-height: 1.5;
+      font-size: 13.5px;
+      color: #78350f;
+      line-height: 1.6;
+      font-style: italic;
     }
 
-    /* ── Error toast ──────────────────────────────────────────── */
+    /* ── Error / info banners ───────────────────────────────────── */
     .error-banner {
-      background: #fef2f2;
-      border: 1px solid #fca5a5;
-      border-radius: 7px;
-      padding: 12px 16px;
-      color: #991b1b;
-      font-size: 13px;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-top: 16px;
+      background: #fef2f2; border: 1px solid #fca5a5;
+      border-radius: 7px; padding: 12px 16px;
+      color: #991b1b; font-size: 13px;
+      display: flex; align-items: flex-start; gap: 10px;
     }
     .error-banner svg { flex-shrink: 0; margin-top: 1px; }
+    .info-banner {
+      background: #eff6ff; border: 1px solid #bfdbfe;
+      border-radius: 7px; padding: 12px 16px;
+      color: #1e40af; font-size: 13px;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
 
-    /* ── History table ────────────────────────────────────────── */
-    .table-wrapper {
-      overflow-x: auto;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
+    /* ── History table ──────────────────────────────────────────── */
+    .table-wrapper { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead tr { background: #f8fafc; }
     thead th {
-      padding: 10px 14px;
-      text-align: left;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
+      padding: 10px 14px; text-align: left;
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
     }
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background .12s;
-    }
+    tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; transition: background .12s; }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: #f8fafc; }
-    tbody td { padding: 11px 14px; color: var(--text); }
+    tbody td { padding: 11px 14px; color: var(--text); vertical-align: middle; }
     tbody td.muted { color: var(--muted); font-size: 12px; }
-
     .expand-row { display: none; background: #f8fafc; }
     .expand-row.open { display: table-row; }
     .expand-row td { padding: 0; }
@@ -394,170 +429,197 @@
       gap: 14px;
     }
     .expand-field label {
-      font-size: 10.5px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      display: block;
-      margin-bottom: 3px;
+      font-size: 10.5px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      display: block; margin-bottom: 3px;
     }
-    .expand-field p { font-size: 12.5px; word-break: break-all; }
+    .expand-field p { font-size: 12.5px; word-break: break-all; line-height: 1.5; }
     .expand-field.full { grid-column: 1 / -1; }
-
-    .empty-state {
-      padding: 56px 20px;
-      text-align: center;
-      color: var(--muted);
-    }
-    .empty-state svg { margin-bottom: 14px; opacity: .35; }
+    .empty-state { padding: 56px 20px; text-align: center; color: var(--muted); }
+    .empty-state svg { margin-bottom: 14px; opacity: .3; }
     .empty-state p { font-size: 14px; }
 
-    /* ── Smoke test section ───────────────────────────────────── */
-    .smoke-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* ── Smoke tests ────────────────────────────────────────────── */
+    .run-all-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 20px;
+      box-shadow: var(--shadow);
     }
-    .smoke-header h3 { font-size: 15px; font-weight: 600; }
+    .run-all-bar p { font-size: 13px; color: var(--muted); }
+    .run-all-summary { display: flex; gap: 14px; font-size: 12.5px; font-weight: 600; align-items: center; }
+    .run-all-summary .pass-count { color: var(--approve); }
+    .run-all-summary .fail-count { color: var(--reject); }
 
-    .smoke-cards-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
+    .smoke-cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .smoke-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      display: flex; flex-direction: column; gap: 12px;
     }
     .smoke-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-    .smoke-card-title {
-      font-size: 13.5px;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.4;
-    }
-    .smoke-card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-    .chip {
-      display: inline-block;
-      padding: 3px 9px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      background: #e2e8f0;
-      color: var(--muted);
-    }
-    .chip.blue { background: #dbeafe; color: #1d4ed8; }
-    .chip.green { background: #dcfce7; color: #15803d; }
-    .chip.yellow { background: #fef9c3; color: #a16207; }
-    .chip.red { background: #fee2e2; color: #b91c1c; }
-
+    .smoke-card-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+    .smoke-card-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
     .expected-line {
-      font-size: 12px;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      font-size: 12px; color: var(--muted);
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
     }
     .expected-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 20px;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
     }
     .exp-approve  { background: var(--approve);  color: white; }
     .exp-escalate { background: var(--escalate); color: white; }
     .exp-reject   { background: var(--reject);   color: white; }
 
     .smoke-result {
-      padding: 10px 14px;
-      border-radius: 7px;
-      font-size: 12.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      padding: 9px 13px; border-radius: 7px;
+      font-size: 12.5px; display: flex; align-items: center; gap: 8px;
     }
-    .smoke-result.pass { background: #f0fdf4; color: #15803d; }
-    .smoke-result.fail { background: #fef2f2; color: #b91c1c; }
+    .smoke-result.pass    { background: #f0fdf4; color: #15803d; }
+    .smoke-result.fail    { background: #fef2f2; color: #b91c1c; }
     .smoke-result.running { background: #eff6ff; color: #1d4ed8; }
-
     .passfail-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 20px;
-      background: currentColor;
+      font-size: 10.5px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
     }
     .pass .passfail-badge { background: var(--approve); color: white; }
-    .fail .passfail-badge { background: var(--reject); color: white; }
+    .fail .passfail-badge { background: var(--reject);  color: white; }
 
-    .run-all-bar {
+    /* ── OCR / VLM section ──────────────────────────────────────── */
+    .vlm-upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: #f8fafc;
+    }
+    .vlm-upload-zone:hover,
+    .vlm-upload-zone.dragover { border-color: var(--accent); background: #eff6ff; }
+    .vlm-upload-zone .upload-icon { color: var(--muted); margin-bottom: 12px; opacity: .6; }
+    .vlm-upload-zone p { font-size: 14px; color: var(--text); font-weight: 500; margin-bottom: 4px; }
+    .vlm-upload-zone span { font-size: 12px; color: var(--muted); }
+
+    .vlm-preview {
+      display: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #f8fafc;
+    }
+    .vlm-preview.active { display: block; }
+    .vlm-preview img { width: 100%; max-height: 360px; object-fit: contain; display: block; background: #1e293b; }
+    .vlm-preview-bar {
+      padding: 10px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid var(--border);
+      background: white;
+    }
+    .vlm-preview-bar span { font-size: 12.5px; color: var(--muted); }
+
+    .vlm-result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .vlm-result-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .vlm-result-item label {
+      font-size: 10.5px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      display: block; margin-bottom: 6px;
+    }
+    .vlm-result-item .vlm-val {
+      font-size: 14px; font-weight: 600; color: var(--text);
+    }
+    .vlm-result-item .vlm-val.detected { color: var(--approve); }
+    .vlm-result-item .vlm-val.not-detected { color: var(--reject); }
+    .vlm-result-item .vlm-val.na { color: var(--muted); font-weight: 400; font-size: 13px; }
+
+    .confidence-bar-wrap { margin-top: 6px; }
+    .confidence-bar {
+      height: 5px; border-radius: 999px;
+      background: var(--border); overflow: hidden; margin-top: 4px;
+    }
+    .confidence-bar-fill {
+      height: 100%; border-radius: 999px;
+      background: var(--approve); transition: width .4s;
+    }
+    .confidence-bar-fill.low { background: var(--reject); }
+    .confidence-bar-fill.mid { background: var(--escalate); }
+
+    .vlm-model-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      background: rgba(99,102,241,.1); color: #4f46e5;
+      border: 1px solid rgba(99,102,241,.2);
+    }
+
+    /* ── Stats row ──────────────────────────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
+      padding: 18px 20px;
       box-shadow: var(--shadow);
     }
-    .run-all-bar p { font-size: 13px; color: var(--muted); }
-    .run-all-summary {
-      display: flex;
-      gap: 14px;
-      font-size: 12.5px;
-      font-weight: 600;
+    .stat-card label {
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em; display: block; margin-bottom: 6px;
     }
-    .run-all-summary .pass-count { color: var(--approve); }
-    .run-all-summary .fail-count { color: var(--reject); }
+    .stat-card .stat-val { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+    .stat-card .stat-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    .stat-card.approve-stat .stat-val { color: var(--approve); }
+    .stat-card.escalate-stat .stat-val { color: var(--escalate); }
+    .stat-card.reject-stat .stat-val { color: var(--reject); }
 
-    /* ── Responsive ───────────────────────────────────────────── */
-    @media (max-width: 900px) {
-      #sidebar { transform: translateX(-100%); }
-      #main { margin-left: 0; }
-      .form-grid, .smoke-cards-grid { grid-template-columns: 1fr; }
-      .result-grid { grid-template-columns: 1fr; }
-      .expand-inner { grid-template-columns: 1fr 1fr; }
-      .content { padding: 20px 16px; }
-    }
-    @media (max-width: 600px) {
-      .form-grid.three { grid-template-columns: 1fr 1fr; }
-    }
-
-    /* ── Section page title ───────────────────────────────────── */
-    .section-header {
-      margin-bottom: 22px;
-    }
-    .section-header h2 {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .section-header p {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    /* Monospace fields */
-    .mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; }
-
-    /* ── Util ──────────────────────────────────────────────────── */
+    /* ── Util ───────────────────────────────────────────────────── */
+    .mono { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 11.5px; }
     .mt-4 { margin-top: 16px; }
     .flex { display: flex; }
     .items-center { align-items: center; }
     .gap-2 { gap: 8px; }
     .w-full { width: 100%; }
     .text-right { text-align: right; }
+
+    /* ── Responsive ─────────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .vlm-result-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 900px) {
+      #sidebar { transform: translateX(-100%); }
+      #main { margin-left: 0; }
+      .form-grid, .smoke-cards-grid { grid-template-columns: 1fr; }
+      .form-grid.three, .form-grid.four { grid-template-columns: 1fr 1fr; }
+      .result-grid { grid-template-columns: 1fr; }
+      .expand-inner { grid-template-columns: 1fr 1fr; }
+      .content { padding: 20px 16px; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .form-grid.three, .form-grid.four { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -572,36 +634,61 @@
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
       </svg>
     </div>
-    <h1>ClearFlowHR</h1>
-    <p>AER Dashboard · v1.0</p>
+    <div class="sidebar-brand-text">
+      <h1>ClearFlowHR</h1>
+      <p>AER Dashboard · v1.1</p>
+    </div>
   </div>
 
   <nav>
     <div class="nav-label">Workspace</div>
     <a id="nav-evaluate" class="active" onclick="navigate('evaluate')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-      </svg>
+      <span class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        </svg>
+      </span>
       Evaluate Request
     </a>
     <a id="nav-history" onclick="navigate('history')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-      </svg>
+      <span class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </span>
       History
-      <span id="history-count" style="margin-left:auto; font-size:11px; background:rgba(148,163,184,.2); color:#94a3b8; border-radius:20px; padding:1px 8px; font-weight:700;"></span>
+      <span class="nav-badge" id="history-count"></span>
     </a>
     <a id="nav-smoke" onclick="navigate('smoke')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
+      <span class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </span>
       Smoke Tests
+    </a>
+
+    <div class="nav-label" style="margin-top:16px">AI Tools</div>
+    <a id="nav-vlm" onclick="navigate('vlm')">
+      <span class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </span>
+      OCR / VLM Tester
+      <span class="nav-badge" style="background:rgba(99,102,241,.15);color:#818cf8">NEW</span>
     </a>
   </nav>
 
   <div class="sidebar-footer">
-    <p>Backend: <strong style="color:#60a5fa">localhost:4647</strong></p>
-    <p style="margin-top:4px">POST /api/v1/evaluate</p>
+    <div class="openrouter-badge">
+      <span class="or-dot" id="or-dot"></span>
+      <span id="or-label">OpenRouter Connected</span>
+    </div>
+    <div class="sidebar-footer-meta">
+      <p>Backend: <strong>localhost:4647</strong></p>
+      <p>Model: <strong style="color:#a78bfa">Gemma 4 26B A4B</strong></p>
+    </div>
   </div>
 </aside>
 
@@ -610,16 +697,20 @@
 ═══════════════════════════════════════════════════════════ -->
 <div id="main">
   <div class="topbar">
-    <h2 id="topbar-title">Evaluate Leave Request</h2>
-    <div class="status-dot">
-      <span class="dot"></span>
-      AER Engine Online
+    <div class="topbar-left">
+      <h2 id="topbar-title">Evaluate Leave Request</h2>
+    </div>
+    <div class="topbar-right">
+      <div class="status-indicator">
+        <span class="dot"></span>
+        AER Engine Online
+      </div>
     </div>
   </div>
 
   <div class="content">
 
-    <!-- ── SECTION: EVALUATE ─────────────────────────────── -->
+    <!-- ── SECTION: EVALUATE ──────────────────────────────── -->
     <section id="section-evaluate" class="section active">
       <div class="section-header">
         <h2>Submit Leave Request</h2>
@@ -628,10 +719,12 @@
 
       <div class="card">
         <div class="card-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
-          </svg>
-          Employee Information
+          <span class="card-title-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </span>
+          Employee & Leave Details
         </div>
         <form id="eval-form" onsubmit="submitEval(event)">
           <div class="form-grid">
@@ -650,8 +743,8 @@
             </div>
           </div>
 
-          <div class="form-grid" style="margin-top:16px">
-            <div class="form-section-header">Leave Details</div>
+          <div class="form-grid" style="margin-top:14px">
+            <div class="form-section-divider"><span>Leave Details</span></div>
             <div class="form-group">
               <label>Leave Type</label>
               <select id="f-leave-type">
@@ -677,8 +770,8 @@
             </div>
           </div>
 
-          <div class="form-grid three" style="margin-top:16px">
-            <div class="form-section-header">Leave Balance Snapshot <span style="font-weight:400;color:#94a3b8">(from HRM)</span></div>
+          <div class="form-grid four" style="margin-top:14px">
+            <div class="form-section-divider"><span>Leave Balance Snapshot <span style="font-weight:400;color:#94a3b8">(from HRM)</span></span></div>
             <div class="form-group">
               <label>Annual Days Remaining</label>
               <input type="number" id="f-annual" value="10" min="0" required />
@@ -697,9 +790,44 @@
             </div>
           </div>
 
-          <div style="margin-top:22px; display:flex; gap:10px; align-items:center">
+          <!-- ── Supporting Documents ───────────────────────── -->
+          <div class="form-grid" style="margin-top:14px">
+            <div class="form-section-divider">
+              <span>Supporting Documents <span style="font-weight:400;color:#94a3b8">(optional · triggers OCR via VLM)</span></span>
+            </div>
+          </div>
+
+          <!-- Drop zone -->
+          <div id="eval-drop-zone"
+               style="border:2px dashed var(--border);border-radius:8px;padding:20px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .2s,background .2s;background:#f8fafc"
+               onclick="document.getElementById('eval-doc-file').click()"
+               ondragover="evalDocDragOver(event)" ondragleave="evalDocDragLeave()" ondrop="evalDocDrop(event)">
+            <div style="color:var(--muted);opacity:.5;flex-shrink:0">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;color:var(--text)">Attach C65-HD form or medical certificate</p>
+              <span style="font-size:12px;color:var(--muted)">Drag &amp; drop or click · JPEG, PNG, WEBP · Multiple files allowed</span>
+            </div>
+          </div>
+          <input type="file" id="eval-doc-file" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="evalDocFileSelected(event)">
+
+          <!-- Thumbnail strip (shown when files are attached) -->
+          <div id="eval-doc-thumbs" style="display:none;margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+
+          <!-- VLM notice (shown when ≥1 doc attached) -->
+          <div id="eval-vlm-notice" style="display:none;margin-top:10px;padding:9px 14px;border-radius:7px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);font-size:12.5px;color:#78350f;display:flex;align-items:center;gap:8px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span id="eval-vlm-notice-text">1 document attached — VLM OCR (Gemma 4 26B A4B) will run during evaluation</span>
+          </div>
+
+          <div style="margin-top:20px; display:flex; gap:10px; align-items:center">
             <button type="submit" class="btn btn-primary" id="submit-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
               Submit Request
@@ -709,33 +837,56 @@
         </form>
       </div>
 
-      <!-- Result -->
       <div id="result-area"></div>
     </section>
 
-    <!-- ── SECTION: HISTORY ───────────────────────────────── -->
+    <!-- ── SECTION: HISTORY ──────────────────────────────── -->
     <section id="section-history" class="section">
       <div class="section-header">
         <h2>Evaluation History</h2>
         <p>Last 20 evaluations stored locally in your browser.</p>
       </div>
 
-      <div class="card" style="padding: 0; overflow: hidden;">
+      <!-- Stats row -->
+      <div class="stats-row" id="stats-row" style="display:none">
+        <div class="stat-card">
+          <label>Total Evaluations</label>
+          <div class="stat-val" id="stat-total">0</div>
+          <div class="stat-sub">all time (local)</div>
+        </div>
+        <div class="stat-card approve-stat">
+          <label>Auto Approved</label>
+          <div class="stat-val" id="stat-approve">0</div>
+          <div class="stat-sub">passed all checks</div>
+        </div>
+        <div class="stat-card escalate-stat">
+          <label>Escalated</label>
+          <div class="stat-val" id="stat-escalate">0</div>
+          <div class="stat-sub">HITL required</div>
+        </div>
+        <div class="stat-card reject-stat">
+          <label>Rejected</label>
+          <div class="stat-val" id="stat-reject">0</div>
+          <div class="stat-sub">rule violation</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0; overflow:hidden;">
         <div id="history-content"></div>
       </div>
     </section>
 
-    <!-- ── SECTION: SMOKE TESTS ───────────────────────────── -->
+    <!-- ── SECTION: SMOKE TESTS ──────────────────────────── -->
     <section id="section-smoke" class="section">
       <div class="section-header">
         <h2>Smoke Tests</h2>
-        <p>5 curated deterministic scenarios to verify the AER rules engine.</p>
+        <p>5 curated deterministic scenarios to verify the AER rules engine against known-good outcomes.</p>
       </div>
 
       <div class="run-all-bar">
         <div>
           <p style="font-weight:600; color:var(--text); font-size:13.5px">Run All 5 Smoke Tests</p>
-          <p>Executes all cases sequentially against the live backend.</p>
+          <p>Executes all cases sequentially against the live backend at <strong style="color:var(--accent)">localhost:4647</strong>.</p>
         </div>
         <div style="display:flex; align-items:center; gap:14px">
           <div class="run-all-summary" id="run-all-summary" style="display:none">
@@ -743,7 +894,7 @@
             <span class="fail-count" id="sum-fail">✗ 0 Failed</span>
           </div>
           <button class="btn btn-primary" id="run-all-btn" onclick="runAllSmoke()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="5 3 19 12 5 21 5 3"/>
             </svg>
             Run All 5
@@ -752,6 +903,109 @@
       </div>
 
       <div class="smoke-cards-grid" id="smoke-grid"></div>
+    </section>
+
+    <!-- ── SECTION: OCR / VLM ────────────────────────────── -->
+    <section id="section-vlm" class="section">
+      <div class="section-header">
+        <h2>OCR / VLM Tester</h2>
+        <p>Test the OpenRouter vision pipeline on C65-HD medical forms. Upload an image to analyze stamps, signatures, and metadata.</p>
+      </div>
+
+      <!-- Model info bar -->
+      <div class="card" style="padding:14px 20px; margin-bottom:20px">
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+          <div class="vlm-model-tag">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Gemma 4 26B A4B (google/gemma-4-26b-a4b-it)
+          </div>
+          <div style="font-size:12.5px; color:var(--muted)">
+            Structural OCR only · Detects red official stamps, authorized signatures, issue date &amp; issuing authority
+          </div>
+          <div style="margin-left:auto; display:flex; align-items:center; gap:6px">
+            <span id="vlm-api-status-dot" style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;box-shadow:0 0 0 2px rgba(34,197,94,.2)"></span>
+            <span id="vlm-api-status-label" style="font-size:12px;color:var(--muted)">API key loaded</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+        <!-- Upload card -->
+        <div class="card" style="margin-bottom:0">
+          <div class="card-title">
+            <span class="card-title-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </span>
+            Upload C65-HD Form
+          </div>
+
+          <div class="vlm-upload-zone" id="vlm-drop-zone" onclick="document.getElementById('vlm-file').click()" ondragover="vlmDragOver(event)" ondragleave="vlmDragLeave(event)" ondrop="vlmDrop(event)">
+            <div class="upload-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <p>Drop image here or click to upload</p>
+            <span>JPEG, PNG, WEBP · Max 10MB</span>
+          </div>
+          <input type="file" id="vlm-file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="vlmFileSelected(event)">
+
+          <div class="vlm-preview" id="vlm-preview" style="margin-top:14px">
+            <img id="vlm-preview-img" src="" alt="preview" />
+            <div class="vlm-preview-bar">
+              <span id="vlm-preview-name">—</span>
+              <button class="btn btn-outline btn-sm" onclick="vlmClear()">Remove</button>
+            </div>
+          </div>
+
+          <div style="margin-top:14px; display:flex; gap:10px; align-items:center">
+            <button class="btn btn-primary" id="vlm-analyze-btn" onclick="vlmAnalyze()" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Analyze Document
+            </button>
+            <span id="vlm-analyze-note" style="font-size:12px;color:var(--muted)">Upload an image first</span>
+          </div>
+        </div>
+
+        <!-- Results card -->
+        <div class="card" style="margin-bottom:0">
+          <div class="card-title">
+            <span class="card-title-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </span>
+            Analysis Results
+          </div>
+          <div id="vlm-results-area">
+            <div class="empty-state" style="padding:40px 16px">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <p>Upload a form to see OCR analysis results</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Raw response log -->
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">
+          <span class="card-title-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+            </svg>
+          </span>
+          Raw VLM Response Log
+        </div>
+        <pre id="vlm-raw-log" style="background:#0f172a;color:#94a3b8;border-radius:7px;padding:14px 16px;font-size:11.5px;overflow-x:auto;min-height:60px;line-height:1.7;white-space:pre-wrap;word-break:break-all">Waiting for analysis…</pre>
+      </div>
     </section>
 
   </div><!-- /content -->
@@ -763,17 +1017,14 @@
 <script>
   'use strict';
 
-  // ── Constants ──────────────────────────────────────────────
-  const API_BASE     = 'http://localhost:4647';
-  const EMPLOYEE_ID  = '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4d';
-  const HISTORY_KEY  = 'aer_history_v1';
-  const MAX_HISTORY  = 20;
+  // ── Constants ───────────────────────────────────────────────
+  const API_BASE    = 'http://localhost:4647';
+  const EMPLOYEE_ID = '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4d';
+  const HISTORY_KEY = 'aer_history_v1';
+  const MAX_HISTORY = 20;
 
-  // ── Date helpers ───────────────────────────────────────────
-  function toISODate(d) {
-    return d.toISOString().split('T')[0];
-  }
-
+  // ── Date helpers ────────────────────────────────────────────
+  function toISODate(d) { return d.toISOString().split('T')[0]; }
   function initDates() {
     const today = new Date();
     const plus3  = new Date(today);
@@ -783,76 +1034,168 @@
   }
   initDates();
 
-  // ── Navigation ─────────────────────────────────────────────
-  const sections = { evaluate: 'Evaluate Leave Request', history: 'Evaluation History', smoke: 'Smoke Tests' };
+  // ── Navigation ──────────────────────────────────────────────
+  const SECTION_TITLES = {
+    evaluate: 'Evaluate Leave Request',
+    history:  'Evaluation History',
+    smoke:    'Smoke Tests',
+    vlm:      'OCR / VLM Tester',
+  };
 
   function navigate(key) {
-    Object.keys(sections).forEach(k => {
+    Object.keys(SECTION_TITLES).forEach(k => {
       document.getElementById('section-' + k).classList.toggle('active', k === key);
-      document.getElementById('nav-' + k).classList.toggle('active', k === key);
+      const nav = document.getElementById('nav-' + k);
+      if (nav) nav.classList.toggle('active', k === key);
     });
-    document.getElementById('topbar-title').textContent = sections[key];
+    document.getElementById('topbar-title').textContent = SECTION_TITLES[key];
     if (key === 'history') renderHistory();
   }
 
-  // ── Local storage history ──────────────────────────────────
-  function loadHistory() {
-    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
-    catch { return []; }
+  // ── HTML escape ─────────────────────────────────────────────
+  function escHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function saveHistory(items) {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, MAX_HISTORY)));
-  }
+  // ── SVG icons ───────────────────────────────────────────────
+  const CHECK_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const WARN_ICON  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+  const X_ICON     = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  const ERR_ICON   = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
 
-  function addHistory(entry) {
-    const items = loadHistory();
-    items.unshift(entry);
-    saveHistory(items);
-    updateHistoryCount();
+  // ── Outcome helpers ─────────────────────────────────────────
+  function outcomeClass(o)     { return o === 'AUTO_APPROVE' ? 'approve' : o === 'ESCALATE' ? 'escalate' : 'reject'; }
+  function outcomeBadgeClass(o){ return o === 'AUTO_APPROVE' ? 'badge-approve' : o === 'ESCALATE' ? 'badge-escalate' : 'badge-reject'; }
+  function outcomeIcon(o)      { return o === 'AUTO_APPROVE' ? CHECK_ICON : o === 'ESCALATE' ? WARN_ICON : X_ICON; }
+  function formatTime(iso) {
+    try { return new Date(iso).toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
+    catch { return iso; }
   }
+  function short(str, n=16) { return str && str.length > n ? str.slice(0, n) + '…' : str; }
+
+  // ── History helpers ─────────────────────────────────────────
+  function loadHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; } }
+  function saveHistory(items) { localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, MAX_HISTORY))); }
+  function addHistory(entry) { const items = loadHistory(); items.unshift(entry); saveHistory(items); updateHistoryCount(); }
 
   function updateHistoryCount() {
     const n = loadHistory().length;
-    const el = document.getElementById('history-count');
-    el.textContent = n > 0 ? n : '';
+    document.getElementById('history-count').textContent = n > 0 ? n : '';
   }
   updateHistoryCount();
 
-  // ── SVG helpers ────────────────────────────────────────────
-  const CHECK_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-  const WARN_ICON  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
-  const X_ICON     = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-  const ERR_ICON   = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
-
-  // ── Outcome helpers ────────────────────────────────────────
-  function outcomeClass(o) {
-    if (o === 'AUTO_APPROVE') return 'approve';
-    if (o === 'ESCALATE')     return 'escalate';
-    return 'reject';
-  }
-  function outcomeBadgeClass(o) {
-    if (o === 'AUTO_APPROVE') return 'badge-approve';
-    if (o === 'ESCALATE')     return 'badge-escalate';
-    return 'badge-reject';
-  }
-  function outcomeIcon(o) {
-    if (o === 'AUTO_APPROVE') return CHECK_ICON;
-    if (o === 'ESCALATE')     return WARN_ICON;
-    return X_ICON;
-  }
-  function formatTime(iso) {
+  // ── Check backend status ────────────────────────────────────
+  async function checkBackendStatus() {
     try {
-      return new Date(iso).toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-    } catch { return iso; }
+      const r = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
+      if (r.ok) {
+        document.getElementById('or-dot').classList.remove('offline');
+        document.getElementById('or-label').textContent = 'OpenRouter Connected';
+        document.getElementById('vlm-api-status-dot').style.background = '#22c55e';
+        document.getElementById('vlm-api-status-label').textContent = 'API key loaded';
+        return;
+      }
+    } catch {}
+    document.getElementById('or-dot').classList.add('offline');
+    document.getElementById('or-label').textContent = 'Backend Offline';
+    document.getElementById('vlm-api-status-dot').style.background = '#ef4444';
+    document.getElementById('vlm-api-status-label').textContent = 'Cannot reach backend';
   }
-  function short(str, n=16) {
-    return str && str.length > n ? str.slice(0, n) + '…' : str;
+  checkBackendStatus();
+
+  // ── Supporting Documents for Evaluation Form ────────────────
+  let evalAttachedDocs = []; // Array of { document_id, form_type, content_ref, mime_type, name, size }
+
+  function evalDocDragOver(e) {
+    e.preventDefault();
+    const dz = document.getElementById('eval-drop-zone');
+    if (dz) { dz.style.borderColor = 'var(--accent)'; dz.style.background = '#eff6ff'; }
   }
 
-  // ── Build API payload ──────────────────────────────────────
+  function evalDocDragLeave() {
+    const dz = document.getElementById('eval-drop-zone');
+    if (dz) { dz.style.borderColor = 'var(--border)'; dz.style.background = '#f8fafc'; }
+  }
+
+  function evalDocDrop(e) {
+    e.preventDefault();
+    evalDocDragLeave();
+    const files = Array.from(e.dataTransfer.files || []);
+    handleEvalFiles(files);
+  }
+
+  function evalDocFileSelected(e) {
+    const files = Array.from(e.target.files || []);
+    handleEvalFiles(files);
+    e.target.value = '';
+  }
+
+  function handleEvalFiles(files) {
+    const validMimes = ['image/jpeg', 'image/png', 'image/webp'];
+    files.forEach(file => {
+      if (!validMimes.includes(file.type)) {
+        alert(`File "${file.name}" is not supported. Please upload JPEG, PNG, or WEBP.`);
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`File "${file.name}" exceeds 10MB limit.`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        evalAttachedDocs.push({
+          document_id: crypto.randomUUID(),
+          form_type: 'C65-HD',
+          content_ref: evt.target.result,
+          mime_type: file.type,
+          name: file.name,
+          size: file.size,
+        });
+        renderEvalThumbs();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function evalDocRemove(idx) {
+    evalAttachedDocs.splice(idx, 1);
+    renderEvalThumbs();
+  }
+
+  function renderEvalThumbs() {
+    const container = document.getElementById('eval-doc-thumbs');
+    const notice = document.getElementById('eval-vlm-notice');
+    const noticeText = document.getElementById('eval-vlm-notice-text');
+    if (!container || !notice) return;
+
+    if (evalAttachedDocs.length === 0) {
+      container.style.display = 'none';
+      container.innerHTML = '';
+      notice.style.display = 'none';
+      return;
+    }
+
+    container.style.display = 'flex';
+    notice.style.display = 'flex';
+    noticeText.textContent = `${evalAttachedDocs.length} document${evalAttachedDocs.length > 1 ? 's' : ''} attached — VLM OCR (Gemma 4 26B A4B) will analyze stamps & signatures during evaluation.`;
+
+    container.innerHTML = evalAttachedDocs.map((doc, idx) => `
+      <div style="position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 10px;background:white;border:1px solid var(--border);border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+        <img src="${doc.content_ref}" alt="" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid #cbd5e1" />
+        <span style="font-size:12px;font-weight:500;color:var(--text);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(doc.name)}</span>
+        <button type="button" onclick="evalDocRemove(${idx})" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px;display:flex;align-items:center" title="Remove">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    `).join('');
+  }
+
+  // ── Build API payload ────────────────────────────────────────
   function buildPayload(overrides = {}) {
-    const base = {
+    return Object.assign({
       request_id:        crypto.randomUUID(),
       employee_id:       EMPLOYEE_ID,
       employee_name:     document.getElementById('f-name').value.trim(),
@@ -862,18 +1205,22 @@
       end_date:          document.getElementById('f-end').value,
       days_requested:    parseInt(document.getElementById('f-days').value, 10),
       leave_balance: {
-        annual_days_remaining:    parseInt(document.getElementById('f-annual').value, 10),
-        sick_days_remaining:      parseInt(document.getElementById('f-sick').value, 10),
-        maternity_weeks_remaining:parseInt(document.getElementById('f-mat').value, 10),
-        unpaid_days_used_ytd:     parseInt(document.getElementById('f-unpaid').value, 10),
+        annual_days_remaining:     parseInt(document.getElementById('f-annual').value, 10),
+        sick_days_remaining:       parseInt(document.getElementById('f-sick').value, 10),
+        maternity_weeks_remaining: parseInt(document.getElementById('f-mat').value, 10),
+        unpaid_days_used_ytd:      parseInt(document.getElementById('f-unpaid').value, 10),
       },
-      attached_documents: [],
+      attached_documents: evalAttachedDocs.map(d => ({
+        document_id: d.document_id,
+        form_type:   d.form_type,
+        content_ref: d.content_ref,
+        mime_type:   d.mime_type,
+      })),
       submitted_at: new Date().toISOString(),
-    };
-    return Object.assign(base, overrides);
+    }, overrides);
   }
 
-  // ── Call API ───────────────────────────────────────────────
+  // ── Call API ─────────────────────────────────────────────────
   async function callEvaluate(payload) {
     const resp = await fetch(`${API_BASE}/api/v1/evaluate`, {
       method: 'POST',
@@ -885,18 +1232,20 @@
     return data;
   }
 
-  // ── Render result card ─────────────────────────────────────
-  function renderResult(result, container) {
+  // ── Render result card ───────────────────────────────────────
+  function renderResult(result, container, payload = null) {
     const cls  = outcomeClass(result.outcome);
     const bcls = outcomeBadgeClass(result.outcome);
     const icon = outcomeIcon(result.outcome);
-    const receipt = result.cryptographic_receipt
-      ? short(result.cryptographic_receipt, 16) + '...'
-      : '—';
+    const receipt = result.cryptographic_receipt ? short(result.cryptographic_receipt, 20) + '...' : '—';
+
+    const ocrBadge = (payload && payload.attached_documents && payload.attached_documents.length > 0)
+      ? `<span class="chip purple" style="font-size:11px">VLM OCR (${payload.attached_documents.length} doc)</span>`
+      : '';
 
     const escalationHtml = result.escalation_question
       ? `<div class="result-field full">
-           <label>Escalation Question</label>
+           <label>Escalation Question <span style="text-transform:none;font-weight:400;color:#94a3b8">(AI-synthesized)</span></label>
            <div class="escalation-box">${escHtml(result.escalation_question)}</div>
          </div>`
       : '';
@@ -907,7 +1256,9 @@
           <span class="outcome-badge ${bcls}">${icon} ${escHtml(result.outcome)}</span>
           ${result.uncertainty_category && result.uncertainty_category !== 'NONE'
             ? `<span class="chip yellow">${escHtml(result.uncertainty_category)}</span>`
-            : ''}
+            : '<span class="chip green">Deterministic</span>'}
+          ${ocrBadge}
+          <span style="margin-left:auto;font-size:11px;color:var(--muted)">${formatTime(result.evaluated_at)}</span>
         </div>
         <div class="result-grid">
           <div class="result-field full">
@@ -917,13 +1268,9 @@
           ${escalationHtml}
           <div class="result-field">
             <label>Decision ID</label>
-            <p class="mono">${short(result.decision_id, 18)}…</p>
+            <p class="mono">${short(result.decision_id, 20)}…</p>
           </div>
           <div class="result-field">
-            <label>Evaluated At</label>
-            <p>${formatTime(result.evaluated_at)}</p>
-          </div>
-          <div class="result-field full">
             <label>Cryptographic Receipt</label>
             <p class="mono">${escHtml(receipt)}</p>
           </div>
@@ -935,72 +1282,65 @@
     container.innerHTML = `
       <div class="error-banner">
         ${ERR_ICON}
-        <div>
-          <strong>Request Failed</strong><br/>
-          <span style="font-size:12.5px">${escHtml(msg)}</span>
-        </div>
+        <div><strong>Request Failed</strong><br/><span style="font-size:12.5px">${escHtml(msg)}</span></div>
       </div>`;
   }
 
-  function escHtml(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  // ── Evaluate form submit ───────────────────────────────────
+  // ── Evaluate form submit ─────────────────────────────────────
   async function submitEval(e) {
     e.preventDefault();
-    const btn = document.getElementById('submit-btn');
+    const btn  = document.getElementById('submit-btn');
     const area = document.getElementById('result-area');
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner"></span> Evaluating…`;
+    const docCount = evalAttachedDocs.length;
+    btn.innerHTML = docCount > 0
+      ? `<span class="spinner"></span> Running VLM OCR (${docCount} doc${docCount > 1 ? 's' : ''})…`
+      : `<span class="spinner"></span> Evaluating…`;
     area.innerHTML = '';
 
     try {
       const payload = buildPayload();
       const result  = await callEvaluate(payload);
-
-      // save history
       addHistory({
-        time:          result.evaluated_at || new Date().toISOString(),
-        employee_name: payload.employee_name,
-        leave_type:    payload.leave_type,
-        days:          payload.days_requested,
-        outcome:       result.outcome,
-        decision_id:   result.decision_id,
+        time:                 result.evaluated_at || new Date().toISOString(),
+        employee_name:        payload.employee_name,
+        leave_type:           payload.leave_type,
+        days:                 payload.days_requested,
+        outcome:              result.outcome,
+        decision_id:          result.decision_id,
         uncertainty_category: result.uncertainty_category,
-        policy_basis:  result.policy_basis,
+        policy_basis:         result.policy_basis,
         escalation_question:  result.escalation_question || null,
-        cryptographic_receipt: result.cryptographic_receipt,
-        evaluated_at:  result.evaluated_at,
+        cryptographic_receipt:result.cryptographic_receipt,
+        evaluated_at:         result.evaluated_at,
+        docs_count:           docCount,
       });
-      updateHistoryCount();
-      renderResult(result, area);
+      renderResult(result, area, payload);
     } catch (err) {
       renderError(err.message, area);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Request`;
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg> Submit Request`;
     }
   }
 
   function resetForm() {
     document.getElementById('eval-form').reset();
     initDates();
+    evalAttachedDocs = [];
+    renderEvalThumbs();
     document.getElementById('result-area').innerHTML = '';
   }
 
-  // ── History rendering ──────────────────────────────────────
+  // ── History rendering ────────────────────────────────────────
   function renderHistory() {
     const items = loadHistory();
     const cont  = document.getElementById('history-content');
+    const statsRow = document.getElementById('stats-row');
 
     if (items.length === 0) {
+      statsRow.style.display = 'none';
       cont.innerHTML = `
         <div class="empty-state">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1011,14 +1351,23 @@
       return;
     }
 
+    // Stats
+    const approve  = items.filter(i => i.outcome === 'AUTO_APPROVE').length;
+    const escalate = items.filter(i => i.outcome === 'ESCALATE').length;
+    const reject   = items.filter(i => i.outcome === 'REJECT').length;
+    document.getElementById('stat-total').textContent   = items.length;
+    document.getElementById('stat-approve').textContent  = approve;
+    document.getElementById('stat-escalate').textContent = escalate;
+    document.getElementById('stat-reject').textContent   = reject;
+    statsRow.style.display = 'grid';
+
     let rows = '';
     items.forEach((item, idx) => {
-      const cls  = outcomeClass(item.outcome);
       const bcls = outcomeBadgeClass(item.outcome);
       const unc  = item.uncertainty_category && item.uncertainty_category !== 'NONE'
         ? `<span class="chip yellow" style="margin-left:6px;font-size:10px">${escHtml(item.uncertainty_category)}</span>` : '';
       const escQ = item.escalation_question
-        ? `<div class="expand-field full"><label>Escalation Question</label><p>${escHtml(item.escalation_question)}</p></div>` : '';
+        ? `<div class="expand-field full"><label>Escalation Question <span style="text-transform:none;font-weight:400">(AI)</span></label><p>${escHtml(item.escalation_question)}</p></div>` : '';
 
       rows += `
         <tr onclick="toggleExpand(${idx})" title="Click to expand">
@@ -1026,53 +1375,34 @@
           <td>${escHtml(item.employee_name)}</td>
           <td><span class="chip blue">${escHtml(item.leave_type)}</span></td>
           <td>${item.days}d</td>
-          <td><span class="outcome-badge ${bcls}" style="font-size:11px; padding:3px 10px">${outcomeIcon(item.outcome)} ${escHtml(item.outcome)}</span>${unc}</td>
+          <td><span class="outcome-badge ${bcls}" style="font-size:10.5px;padding:3px 10px">${outcomeIcon(item.outcome)} ${escHtml(item.outcome)}</span>${unc}</td>
           <td class="muted mono">${short(item.decision_id, 8)}…</td>
         </tr>
         <tr class="expand-row" id="exp-${idx}">
           <td colspan="6">
             <div class="expand-inner">
-              <div class="expand-field">
-                <label>Decision ID</label>
-                <p class="mono">${escHtml(item.decision_id)}</p>
-              </div>
-              <div class="expand-field">
-                <label>Evaluated At</label>
-                <p>${formatTime(item.evaluated_at)}</p>
-              </div>
-              <div class="expand-field">
-                <label>Uncertainty</label>
-                <p>${escHtml(item.uncertainty_category)}</p>
-              </div>
-              <div class="expand-field full">
-                <label>Policy Basis</label>
-                <p>${escHtml(item.policy_basis)}</p>
-              </div>
+              <div class="expand-field"><label>Decision ID</label><p class="mono">${escHtml(item.decision_id)}</p></div>
+              <div class="expand-field"><label>Evaluated At</label><p>${formatTime(item.evaluated_at)}</p></div>
+              <div class="expand-field"><label>Uncertainty</label><p>${escHtml(item.uncertainty_category)}</p></div>
+              <div class="expand-field full"><label>Policy Basis</label><p>${escHtml(item.policy_basis)}</p></div>
               ${escQ}
-              <div class="expand-field full">
-                <label>Cryptographic Receipt</label>
-                <p class="mono">${escHtml(item.cryptographic_receipt)}</p>
-              </div>
+              <div class="expand-field full"><label>Cryptographic Receipt</label><p class="mono">${escHtml(item.cryptographic_receipt)}</p></div>
             </div>
           </td>
         </tr>`;
     });
 
     cont.innerHTML = `
-      <div style="padding:14px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center">
+      <div style="padding:12px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center">
         <span style="font-size:13px; font-weight:600; color:var(--text)">${items.length} Evaluation${items.length !== 1 ? 's' : ''}</span>
         <button class="btn btn-outline btn-sm" onclick="clearHistory()">Clear All</button>
       </div>
-      <div class="table-wrapper" style="border:none; border-radius:0">
+      <div class="table-wrapper" style="border:none;border-radius:0">
         <table>
           <thead>
             <tr>
-              <th>Time</th>
-              <th>Employee</th>
-              <th>Leave Type</th>
-              <th>Days</th>
-              <th>Outcome</th>
-              <th>Decision ID</th>
+              <th>Time</th><th>Employee</th><th>Leave Type</th>
+              <th>Days</th><th>Outcome</th><th>Decision ID</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -1084,7 +1414,6 @@
     const row = document.getElementById('exp-' + idx);
     if (row) row.classList.toggle('open');
   }
-
   function clearHistory() {
     if (!confirm('Clear all evaluation history?')) return;
     localStorage.removeItem(HISTORY_KEY);
@@ -1092,104 +1421,73 @@
     renderHistory();
   }
 
-  // ── Smoke tests ────────────────────────────────────────────
+  // ── Smoke tests ──────────────────────────────────────────────
   const SMOKE_CASES = [
     {
-      id: 'sc1',
+      id: 'sc1', expected: 'AUTO_APPROVE',
       title: 'Confirmed employee — standard annual leave',
-      desc: 'CONFIRMED status + ANNUAL leave + 3 days within balance should pass all eligibility and balance checks.',
-      tags: [['CONFIRMED','blue'],['ANNUAL','blue'],['3 days','']],
-      expected: 'AUTO_APPROVE',
+      desc: 'CONFIRMED status + ANNUAL + 3 days within balance. All checks should pass.',
+      tags: [['CONFIRMED','blue'],['ANNUAL','blue'],['3 days','green']],
       payload: {
-        employee_name:     'Smoke Test User 1',
-        employment_status: 'CONFIRMED',
-        leave_type:        'ANNUAL',
-        days_requested:    3,
-        start_date:        toISODate(new Date()),
-        end_date:          toISODate(new Date(Date.now() + 2*864e5)),
+        employee_name: 'Smoke Test User 1', employment_status: 'CONFIRMED', leave_type: 'ANNUAL',
+        days_requested: 3, start_date: toISODate(new Date()), end_date: toISODate(new Date(Date.now() + 2*864e5)),
         leave_balance: { annual_days_remaining: 10, sick_days_remaining: 30, maternity_weeks_remaining: 0, unpaid_days_used_ytd: 0 },
       }
     },
     {
-      id: 'sc2',
+      id: 'sc2', expected: 'REJECT', expectedNote: 'Article 8.2',
       title: 'Probationary employee — annual leave (Article 8.2)',
-      desc: 'PROBATION status bars paid annual leave per Article 8.2. Should be hard-rejected.',
+      desc: 'PROBATION status bars paid annual leave per Article 8.2. Hard reject.',
       tags: [['PROBATION','red'],['ANNUAL','blue'],['2 days','']],
-      expected: 'REJECT',
-      expectedNote: 'Article 8.2',
       payload: {
-        employee_name:     'Smoke Test User 2',
-        employment_status: 'PROBATION',
-        leave_type:        'ANNUAL',
-        days_requested:    2,
-        start_date:        toISODate(new Date()),
-        end_date:          toISODate(new Date(Date.now() + 864e5)),
+        employee_name: 'Smoke Test User 2', employment_status: 'PROBATION', leave_type: 'ANNUAL',
+        days_requested: 2, start_date: toISODate(new Date()), end_date: toISODate(new Date(Date.now() + 864e5)),
         leave_balance: { annual_days_remaining: 10, sick_days_remaining: 30, maternity_weeks_remaining: 0, unpaid_days_used_ytd: 0 },
       }
     },
     {
-      id: 'sc3',
+      id: 'sc3', expected: 'REJECT', expectedNote: 'Article 9.1',
       title: 'Resigned employee — sick leave (Article 9.1)',
-      desc: 'RESIGNED status invalidates all leave entitlements per Article 9.1. Should be rejected.',
+      desc: 'RESIGNED status invalidates all leave entitlements per Article 9.1.',
       tags: [['RESIGNED','red'],['SICK','blue'],['3 days','']],
-      expected: 'REJECT',
-      expectedNote: 'Article 9.1',
       payload: {
-        employee_name:     'Smoke Test User 3',
-        employment_status: 'RESIGNED',
-        leave_type:        'SICK',
-        days_requested:    3,
-        start_date:        toISODate(new Date()),
-        end_date:          toISODate(new Date(Date.now() + 2*864e5)),
+        employee_name: 'Smoke Test User 3', employment_status: 'RESIGNED', leave_type: 'SICK',
+        days_requested: 3, start_date: toISODate(new Date()), end_date: toISODate(new Date(Date.now() + 2*864e5)),
         leave_balance: { annual_days_remaining: 5, sick_days_remaining: 30, maternity_weeks_remaining: 0, unpaid_days_used_ytd: 0 },
       }
     },
     {
-      id: 'sc4',
+      id: 'sc4', expected: 'ESCALATE', expectedNote: 'U3_AUTHORITY',
       title: 'Confirmed + annual — authority limit exceeded',
-      desc: 'CONFIRMED employee requesting 8 days exceeds single-approver authority. Requires HITL escalation (U3_AUTHORITY).',
+      desc: '8 days of annual leave exceeds single-approver authority. Requires HITL (U3_AUTHORITY).',
       tags: [['CONFIRMED','blue'],['ANNUAL','blue'],['8 days','yellow']],
-      expected: 'ESCALATE',
-      expectedNote: 'U3_AUTHORITY',
       payload: {
-        employee_name:     'Smoke Test User 4',
-        employment_status: 'CONFIRMED',
-        leave_type:        'ANNUAL',
-        days_requested:    8,
-        start_date:        toISODate(new Date()),
-        end_date:          toISODate(new Date(Date.now() + 7*864e5)),
+        employee_name: 'Smoke Test User 4', employment_status: 'CONFIRMED', leave_type: 'ANNUAL',
+        days_requested: 8, start_date: toISODate(new Date()), end_date: toISODate(new Date(Date.now() + 7*864e5)),
         leave_balance: { annual_days_remaining: 15, sick_days_remaining: 30, maternity_weeks_remaining: 0, unpaid_days_used_ytd: 0 },
       }
     },
     {
-      id: 'sc5',
+      id: 'sc5', expected: 'ESCALATE', expectedNote: 'U2_POLICY',
       title: 'Probationary + maternity — policy ambiguity',
-      desc: 'PROBATION employee requesting 84 days MATERNITY leave creates policy conflict. Escalates as U2_POLICY.',
+      desc: 'PROBATION employee requesting MATERNITY leave creates policy conflict (U2_POLICY).',
       tags: [['PROBATION','red'],['MATERNITY','blue'],['84 days','yellow']],
-      expected: 'ESCALATE',
-      expectedNote: 'U2_POLICY',
       payload: {
-        employee_name:     'Smoke Test User 5',
-        employment_status: 'PROBATION',
-        leave_type:        'MATERNITY',
-        days_requested:    84,
-        start_date:        toISODate(new Date()),
-        end_date:          toISODate(new Date(Date.now() + 83*864e5)),
+        employee_name: 'Smoke Test User 5', employment_status: 'PROBATION', leave_type: 'MATERNITY',
+        days_requested: 84, start_date: toISODate(new Date()), end_date: toISODate(new Date(Date.now() + 83*864e5)),
         leave_balance: { annual_days_remaining: 0, sick_days_remaining: 30, maternity_weeks_remaining: 26, unpaid_days_used_ytd: 0 },
       }
     },
   ];
 
   function expectedBadge(sc) {
-    const o = sc.expected;
-    const cls = o === 'AUTO_APPROVE' ? 'exp-approve' : o === 'ESCALATE' ? 'exp-escalate' : 'exp-reject';
+    const cls  = sc.expected === 'AUTO_APPROVE' ? 'exp-approve' : sc.expected === 'ESCALATE' ? 'exp-escalate' : 'exp-reject';
     const note = sc.expectedNote ? ` <span style="font-weight:500;font-size:10.5px">(${escHtml(sc.expectedNote)})</span>` : '';
-    return `<span class="expected-badge ${cls}">${escHtml(o)}</span>${note}`;
+    return `<span class="expected-badge ${cls}">${escHtml(sc.expected)}</span>${note}`;
   }
 
   function renderSmokeGrid() {
-    const grid = document.getElementById('smoke-grid');
-    grid.innerHTML = SMOKE_CASES.map((sc, i) => {
+    document.getElementById('smoke-grid').innerHTML = SMOKE_CASES.map((sc, i) => {
       const tagsHtml = sc.tags.map(([t,c]) => `<span class="chip ${c}">${escHtml(t)}</span>`).join('');
       return `
         <div class="smoke-card" id="scard-${sc.id}">
@@ -1199,14 +1497,12 @@
               <div class="smoke-card-meta">${tagsHtml}</div>
             </div>
             <button class="btn btn-outline btn-sm" id="sbtn-${sc.id}" onclick="runSmoke('${sc.id}', ${i})">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               Run
             </button>
           </div>
-          <p style="font-size:12px; color:var(--muted); line-height:1.5">${escHtml(sc.desc)}</p>
-          <div class="expected-line">
-            Expected: ${expectedBadge(sc)}
-          </div>
+          <p style="font-size:12px;color:var(--muted);line-height:1.5">${escHtml(sc.desc)}</p>
+          <div class="expected-line">Expected: ${expectedBadge(sc)}</div>
           <div id="sres-${sc.id}"></div>
         </div>`;
     }).join('');
@@ -1214,71 +1510,211 @@
   renderSmokeGrid();
 
   async function runSmoke(id, idx) {
-    const sc   = SMOKE_CASES[idx];
-    const btn  = document.getElementById('sbtn-' + id);
-    const res  = document.getElementById('sres-' + id);
-
+    const sc  = SMOKE_CASES[idx];
+    const btn = document.getElementById('sbtn-' + id);
+    const res = document.getElementById('sres-' + id);
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner dark" style="width:12px;height:12px;border-width:2px"></span>`;
-    res.innerHTML = `<div class="smoke-result running"><span class="spinner dark" style="width:12px;height:12px;border-width:2px"></span> Running…</div>`;
+    btn.innerHTML = `<span class="spinner dark" style="width:11px;height:11px;border-width:2px"></span>`;
+    res.innerHTML = `<div class="smoke-result running"><span class="spinner dark" style="width:11px;height:11px;border-width:2px"></span> Running…</div>`;
 
     const payload = Object.assign({
-      request_id:        crypto.randomUUID(),
-      employee_id:       EMPLOYEE_ID,
-      attached_documents:[],
-      submitted_at:      new Date().toISOString(),
+      request_id: crypto.randomUUID(), employee_id: EMPLOYEE_ID,
+      attached_documents: [], submitted_at: new Date().toISOString(),
     }, sc.payload);
 
-    let actual = null;
-    let errMsg = null;
+    let actual = null, errMsg = null;
     try {
       const result = await callEvaluate(payload);
       actual = result.outcome;
       const pass = actual === sc.expected;
-      const passCls = pass ? 'pass' : 'fail';
       res.innerHTML = `
-        <div class="smoke-result ${passCls}">
+        <div class="smoke-result ${pass ? 'pass' : 'fail'}">
           <span class="passfail-badge">${pass ? '✓ PASS' : '✗ FAIL'}</span>
           <span style="flex:1">Got <strong>${escHtml(actual)}</strong>
             ${result.uncertainty_category && result.uncertainty_category !== 'NONE'
-              ? `· ${escHtml(result.uncertainty_category)}` : ''}
+              ? `· <span class="chip yellow" style="font-size:10px">${escHtml(result.uncertainty_category)}</span>` : ''}
           </span>
         </div>
-        <div style="margin-top:8px; font-size:11.5px; color:var(--muted); line-height:1.5">
-          ${escHtml(result.policy_basis)}
-        </div>`;
+        <div style="margin-top:7px;font-size:11.5px;color:var(--muted);line-height:1.5">${escHtml(result.policy_basis)}</div>`;
     } catch (err) {
       errMsg = err.message;
       res.innerHTML = `<div class="smoke-result fail">${ERR_ICON} <span>Error: ${escHtml(err.message)}</span></div>`;
     }
 
     btn.disabled = false;
-    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Re-run`;
-    return { pass: actual === sc.expected && !errMsg, actual, errMsg };
+    btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Re-run`;
+    return { pass: actual === sc.expected && !errMsg };
   }
 
   async function runAllSmoke() {
     const btn    = document.getElementById('run-all-btn');
     const sumDiv = document.getElementById('run-all-summary');
-    const sumPass = document.getElementById('sum-pass');
-    const sumFail = document.getElementById('sum-fail');
-
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> Running…`;
     sumDiv.style.display = 'none';
-
     let passed = 0, failed = 0;
     for (let i = 0; i < SMOKE_CASES.length; i++) {
-      const sc = SMOKE_CASES[i];
-      const { pass } = await runSmoke(sc.id, i);
+      const { pass } = await runSmoke(SMOKE_CASES[i].id, i);
       if (pass) passed++; else failed++;
     }
-
-    sumPass.textContent = `✓ ${passed} Passed`;
-    sumFail.textContent = `✗ ${failed} Failed`;
+    document.getElementById('sum-pass').textContent = `✓ ${passed} Passed`;
+    document.getElementById('sum-fail').textContent = `✗ ${failed} Failed`;
     sumDiv.style.display = 'flex';
     btn.disabled = false;
-    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run All 5`;
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run All 5`;
+  }
+
+  // ── OCR / VLM tester ────────────────────────────────────────
+  let vlmFileData = null; // { dataUrl, name, mimeType }
+
+  function vlmDragOver(e) { e.preventDefault(); document.getElementById('vlm-drop-zone').classList.add('dragover'); }
+  function vlmDragLeave()  { document.getElementById('vlm-drop-zone').classList.remove('dragover'); }
+  function vlmDrop(e) {
+    e.preventDefault();
+    vlmDragLeave();
+    const file = e.dataTransfer.files[0];
+    if (file) vlmLoadFile(file);
+  }
+  function vlmFileSelected(e) { const file = e.target.files[0]; if (file) vlmLoadFile(file); }
+
+  function vlmLoadFile(file) {
+    if (!['image/jpeg','image/png','image/webp'].includes(file.type)) {
+      alert('Unsupported file type. Please upload JPEG, PNG, or WEBP.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      vlmFileData = { dataUrl: e.target.result, name: file.name, mimeType: file.type };
+      document.getElementById('vlm-preview-img').src = e.target.result;
+      document.getElementById('vlm-preview-name').textContent = file.name;
+      document.getElementById('vlm-preview').classList.add('active');
+      document.getElementById('vlm-analyze-btn').disabled = false;
+      document.getElementById('vlm-analyze-note').textContent = 'Ready to analyze';
+      document.getElementById('vlm-results-area').innerHTML = `
+        <div class="info-banner" style="margin-bottom:0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Image loaded. Click <strong>Analyze Document</strong> to run OCR.</span>
+        </div>`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function vlmClear() {
+    vlmFileData = null;
+    document.getElementById('vlm-preview').classList.remove('active');
+    document.getElementById('vlm-preview-img').src = '';
+    document.getElementById('vlm-analyze-btn').disabled = true;
+    document.getElementById('vlm-analyze-note').textContent = 'Upload an image first';
+    document.getElementById('vlm-file').value = '';
+    document.getElementById('vlm-results-area').innerHTML = `
+      <div class="empty-state" style="padding:40px 16px">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <p>Upload a form to see OCR analysis results</p>
+      </div>`;
+    document.getElementById('vlm-raw-log').textContent = 'Waiting for analysis…';
+  }
+
+  async function vlmAnalyze() {
+    if (!vlmFileData) return;
+    const btn  = document.getElementById('vlm-analyze-btn');
+    const note = document.getElementById('vlm-analyze-note');
+    const resArea = document.getElementById('vlm-results-area');
+    const rawLog  = document.getElementById('vlm-raw-log');
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Analyzing…`;
+    note.textContent = 'Sending to OpenRouter VLM…';
+    resArea.innerHTML = `<div class="smoke-result running" style="border-radius:8px"><span class="spinner dark" style="width:14px;height:14px;border-width:2px"></span> Running OCR via Gemma 4 26B A4B…</div>`;
+    rawLog.textContent = 'Waiting for response…';
+
+    // Build a fake leave request payload with the image as an attached document
+    const docId = crypto.randomUUID();
+    const payload = {
+      request_id:        crypto.randomUUID(),
+      employee_id:       EMPLOYEE_ID,
+      employee_name:     'VLM Test User',
+      employment_status: 'CONFIRMED',
+      leave_type:        'SICK',
+      start_date:        toISODate(new Date()),
+      end_date:          toISODate(new Date(Date.now() + 2*864e5)),
+      days_requested:    3,
+      leave_balance: { annual_days_remaining: 10, sick_days_remaining: 30, maternity_weeks_remaining: 26, unpaid_days_used_ytd: 0 },
+      attached_documents: [{
+        document_id: docId,
+        form_type:   'C65-HD',
+        content_ref: vlmFileData.dataUrl,
+        mime_type:   vlmFileData.mimeType,
+      }],
+      submitted_at: new Date().toISOString(),
+    };
+
+    try {
+      const result = await callEvaluate(payload);
+      rawLog.textContent = JSON.stringify(result, null, 2);
+
+      // The VLM path will escalate with U1_DATA if it fails, or AUTO_APPROVE/continue if it passes.
+      // We show the VLM-driven outcome.
+      const isVlmFailure = result.outcome === 'ESCALATE' && result.uncertainty_category === 'U1_DATA';
+      const isVlmSuccess = result.outcome !== 'ESCALATE' || result.uncertainty_category !== 'U1_DATA';
+
+      if (isVlmFailure) {
+        // VLM failed — show failure reason from policy_basis
+        resArea.innerHTML = `
+          <div class="error-banner" style="margin-bottom:16px">
+            ${ERR_ICON}
+            <div>
+              <strong>Document Verification Failed (U1_DATA)</strong><br/>
+              <span style="font-size:12.5px">${escHtml(result.policy_basis)}</span>
+            </div>
+          </div>
+          <div style="font-size:12.5px;color:var(--muted);line-height:1.6">
+            This triggers an automatic ESCALATE with U1_DATA uncertainty. The workflow requests original document resubmission.<br/>
+            <strong style="color:var(--text)">Escalation question:</strong> ${escHtml(result.escalation_question || '—')}
+          </div>`;
+      } else {
+        // VLM passed — document accepted
+        resArea.innerHTML = `
+          <div class="smoke-result pass" style="border-radius:8px;margin-bottom:16px">
+            <span class="passfail-badge" style="background:var(--approve);color:white">✓ VERIFIED</span>
+            <span>Document passed VLM analysis. Evaluation continued to rules engine.</span>
+          </div>
+          <div class="vlm-result-grid">
+            <div class="vlm-result-item">
+              <label>Overall Outcome</label>
+              <div class="vlm-val" style="color:${result.outcome==='AUTO_APPROVE'?'var(--approve)':result.outcome==='ESCALATE'?'var(--escalate)':'var(--reject)'}">
+                ${escHtml(result.outcome)}
+              </div>
+            </div>
+            <div class="vlm-result-item">
+              <label>Uncertainty</label>
+              <div class="vlm-val ${result.uncertainty_category==='NONE'?'detected':'na'}">
+                ${escHtml(result.uncertainty_category)}
+              </div>
+            </div>
+            <div class="vlm-result-item">
+              <label>Decision ID</label>
+              <div class="vlm-val" style="font-size:11px;font-family:monospace">${short(result.decision_id, 16)}…</div>
+            </div>
+            <div class="vlm-result-item" style="grid-column:1/-1">
+              <label>Policy Basis</label>
+              <div style="font-size:13px;color:var(--text);line-height:1.5">${escHtml(result.policy_basis)}</div>
+            </div>
+          </div>`;
+      }
+    } catch (err) {
+      rawLog.textContent = 'Error: ' + err.message;
+      resArea.innerHTML = `
+        <div class="error-banner">
+          ${ERR_ICON}
+          <div><strong>Analysis Failed</strong><br/><span style="font-size:12.5px">${escHtml(err.message)}</span></div>
+        </div>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Analyze Document`;
+      note.textContent = 'Done';
+    }
   }
 </script>
 

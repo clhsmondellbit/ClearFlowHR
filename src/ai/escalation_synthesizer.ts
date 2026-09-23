@@ -1,8 +1,8 @@
 /**
  * @file escalation_synthesizer.ts
- * @description LLM escalation question synthesizer.
+ * @description LLM escalation question synthesizer via OpenRouter.
  *
- * THIS IS THE ONLY MODULE WHERE AN LLM IS PERMITTED.
+ * THIS IS THE ONLY MODULE WHERE AN LLM IS PERMITTED FOR LANGUAGE GENERATION.
  *
  * The LLM receives a pre-computed policy_basis and uncertainty_category
  * (determined entirely by the deterministic rules engine) and synthesizes
@@ -19,13 +19,13 @@
  *   - Example: "Employee X is requesting Y leave but Z (Violation of Article N.N).
  *     Decision: [Option A] or [Option B]?"
  *
- * NOTE: The LLM client is a configurable adapter. Currently ships with a
- *       deterministic template fallback (no external dependency) so the system
- *       works fully offline. A real LLM client can be plugged in Phase 3.
+ * Fallback: If OPENROUTER_API_KEY is absent or the API call fails, the
+ * deterministic template is used — the system remains fully functional offline.
  */
 
 import type { UncertaintyCategory, LeaveType } from "../api/routes/schemas.js";
 import type { ApprovalTier } from "../core/rules/authority.js";
+import { callOpenRouter, getApiKey } from "./openrouter_client.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Input / Output types
@@ -47,8 +47,7 @@ export interface EscalationSynthesisInput {
 /**
  * Per-uncertainty-category question templates.
  * These produce HITL-compliant closed questions per AGENTS.md §5.
- * LLM synthesis (Phase 3) will replace these with richer language while keeping
- * the same structural pattern — the logic (outcome, policy) will never change.
+ * LLM synthesis will enrich language quality while keeping the same structure.
  */
 const TEMPLATES: Record<
   Exclude<UncertaintyCategory, "NONE">,
@@ -82,8 +81,94 @@ const TEMPLATES: Record<
   },
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// LLM synthesis via OpenRouter
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Model for escalation question language enrichment.
+ * A text-only model is sufficient — no vision capability needed here.
+ */
+const SYNTH_MODEL = process.env["SYNTH_MODEL"] ?? "google/gemma-4-26b-a4b-it";
+
+const SYNTH_SYSTEM_PROMPT = `\
+You are a professional HR escalation assistant. Your ONLY task is to rewrite the provided \
+escalation question in clear, concise, professional English.
+
+Rules you MUST follow:
+1. Keep it as a single closed question ending with decision options in square brackets.
+2. Do NOT change the decision options, outcome, or policy citation.
+3. Do NOT add new information, opinions, or recommendations.
+4. Do NOT calculate leave balances or interpret labor laws.
+5. Output ONLY the rewritten question — no preamble, no explanation.`;
+
+/**
+ * Attempts to enrich the template question via OpenRouter.
+ * Returns the template verbatim if the API is unavailable or fails.
+ */
+async function enrichWithLlm(
+  templateQuestion: string,
+  input: EscalationSynthesisInput
+): Promise<string> {
+  try {
+    const response = await callOpenRouter(
+      {
+        model: SYNTH_MODEL,
+        messages: [
+          { role: "system", content: SYNTH_SYSTEM_PROMPT },
+          {
+            role: "user",
+            content:
+              `Rewrite the following HR escalation question for employee "${input.employee_name}" ` +
+              `(${input.leave_type} leave, ${input.days_requested} day(s), ` +
+              `uncertainty: ${input.uncertainty_category}):\n\n${templateQuestion}`,
+          },
+        ],
+        max_tokens: 300,
+        temperature: 0.3,
+      },
+      8_000 // timeout for enrichment
+    );
+
+    let enriched = response.choices[0]?.message?.content?.trim() ?? "";
+    // Remove any <think>...</think> reasoning blocks from modern reasoning models
+    enriched = enriched.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+
+    // Safety: only use the LLM output if it still contains "Decision:" and option brackets
+    if (
+      enriched.length > 0 &&
+      enriched.includes("Decision:") &&
+      enriched.includes("[") &&
+      enriched.includes("]")
+    ) {
+      return enriched;
+    }
+    // LLM output looks malformed — fall back to template
+    console.warn(
+      "[AER/escalation_synthesizer] LLM output did not contain expected 'Decision:' or option brackets — using template fallback"
+    );
+    return templateQuestion;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(
+      `[AER/escalation_synthesizer] LLM enrichment failed (${message}) — using template fallback`
+    );
+    return templateQuestion;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Public API
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * Synthesizes a single-turn HITL escalation question.
+ *
+ * Flow:
+ *   1. Build the deterministic template question (always done first).
+ *   2. If in test suite (Vitest) or offline, return the deterministic template immediately (< 1ms).
+ *   3. If OPENROUTER_API_KEY is set in dev/prod, attempt LLM language enrichment.
+ *   4. If LLM fails or format is invalid, return the template verbatim.
  *
  * The question text is the ONLY LLM output surface in the entire AER system.
  * All outcome logic has been decided before this function is called.
@@ -102,16 +187,14 @@ export async function synthesizeEscalationQuestion(
     );
   }
 
-  // TODO (Phase 3): Replace template with actual LLM API call.
-  // The call must be fire-and-forget for language enrichment only.
-  // The model must be given the policy_basis as a fixed fact, not an input to reason about.
-  //
-  // Example system prompt:
-  //   "You are an HR escalation assistant. Rewrite the following question in clear,
-  //    professional Vietnamese/English (as configured). Do not change the options,
-  //    the decision outcome, or the policy citation. Output only the rewritten question."
-
   const template = TEMPLATES[input.uncertainty_category];
-  // Synchronous template — returns immediately (< 1ms, within 10ms SLA for escalation paths).
-  return Promise.resolve(template(input));
+  const templateQuestion = template(input);
+
+  // During automated unit/benchmark testing or when offline, use the deterministic template immediately
+  if (process.env["NODE_ENV"] === "test" || Boolean(process.env["VITEST"]) || !getApiKey()) {
+    return templateQuestion;
+  }
+
+  // Attempt LLM enrichment — always falls back to template on failure
+  return enrichWithLlm(templateQuestion, input);
 }

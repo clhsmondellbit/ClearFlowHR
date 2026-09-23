@@ -12,6 +12,12 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import { evaluateRouter } from "./api/routes/evaluate.js";
 import { overrideRouter } from "./api/routes/override.js";
 
+try {
+  process.loadEnvFile();
+} catch {
+  // .env file is optional in production/containerized environments
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app: Express = express();
 const PORT = process.env["PORT"] ?? 4647;
@@ -29,7 +35,7 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-app.use(express.json());
+app.use(express.json({ limit: "25mb" }));
 
 // ── Static frontend (public/) ─────────────────────────────────────────────────
 const publicDir = path.join(__dirname, "..", "public");

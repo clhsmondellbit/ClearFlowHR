@@ -77,6 +77,38 @@ export async function runEvaluation(
         escalation_question,
       });
     }
+
+    // Verify required visual authenticity markers (stamp + signature) on C65-HD form
+    const unverifiedDoc = vlmResults.find(
+      (r) => r.success && (!r.result.red_stamp_detected || !r.result.signature_detected)
+    );
+
+    if (unverifiedDoc && unverifiedDoc.success) {
+      const missingList: string[] = [];
+      if (!unverifiedDoc.result.red_stamp_detected) missingList.push("official red stamp not detected");
+      if (!unverifiedDoc.result.signature_detected) missingList.push("authorized signature not detected");
+
+      const policy_basis =
+        `U1_DATA — Document authenticity check failed for document (${unverifiedDoc.result.document_id}): ` +
+        `${missingList.join(", ")}. Valid C65-HD forms require both stamp and signature.`;
+
+      const escalation_question = await synthesizeEscalationQuestion({
+        employee_name: request.employee_name,
+        leave_type: request.leave_type,
+        days_requested: request.days_requested,
+        policy_basis,
+        uncertainty_category: "U1_DATA",
+      });
+
+      return buildResponse({
+        decision_id,
+        evaluated_at,
+        outcome: "ESCALATE",
+        uncertainty_category: "U1_DATA",
+        policy_basis,
+        escalation_question,
+      });
+    }
   }
 
   // ── Step 2: Eligibility check ──────────────────────────────────────────────
