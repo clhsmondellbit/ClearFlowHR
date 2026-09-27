@@ -78,19 +78,25 @@ export async function runEvaluation(
       });
     }
 
-    // Verify required visual authenticity markers (stamp + signature) on C65-HD form
-    const unverifiedDoc = vlmResults.find(
-      (r) => r.success && (!r.result.red_stamp_detected || !r.result.signature_detected)
-    );
+    // Verify required visual authenticity markers for medical forms (C65-HD / BHXH)
+    // General leave requests (ĐƠN XIN NGHỈ PHÉP) do not require hospital red stamps.
+    const unverifiedDoc = vlmResults.find((r) => {
+      if (!r.success) return false;
+      const docDef = request.attached_documents.find((d) => d.document_id === r.result.document_id);
+      const isC65 =
+        docDef?.form_type === "C65-HD" ||
+        (request.leave_type === "SICK" && docDef?.form_type?.includes("C65"));
+
+      if (isC65 && !r.result.red_stamp_detected) {
+        return true;
+      }
+      return false;
+    });
 
     if (unverifiedDoc && unverifiedDoc.success) {
-      const missingList: string[] = [];
-      if (!unverifiedDoc.result.red_stamp_detected) missingList.push("official red stamp not detected");
-      if (!unverifiedDoc.result.signature_detected) missingList.push("authorized signature not detected");
-
       const policy_basis =
-        `U1_DATA — Document authenticity check failed for document (${unverifiedDoc.result.document_id}): ` +
-        `${missingList.join(", ")}. Valid C65-HD forms require both stamp and signature.`;
+        `U1_DATA — Document authenticity check failed for medical certificate (${unverifiedDoc.result.document_id}): ` +
+        `official hospital red stamp not detected. Form C65-HD requires an official medical seal.`;
 
       const escalation_question = await synthesizeEscalationQuestion({
         employee_name: request.employee_name,

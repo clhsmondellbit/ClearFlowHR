@@ -8,8 +8,9 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint",
     "test:benchmark": "vitest run tests/benchmark",
+    "benchmark:dataset": "tsx scripts/benchmark_training_data.ts",
     "tsc": "tsc"
   },
   "keywords": ["hr", "middleware", "escalation", "leave-management"],

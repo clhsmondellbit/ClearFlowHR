@@ -9,7 +9,8 @@
  */
 
 import { Router, type Request, type Response, type IRouter } from "express";
-import { HitlOverrideRequestSchema } from "./schemas.js";
+import { HitlOverrideRequestSchema, type HitlOverrideResponse } from "./schemas.js";
+import { generateOverrideReceipt, appendOverrideToLedger } from "../../ledger/audit.js";
 
 export const overrideRouter: IRouter = Router();
 
@@ -25,10 +26,32 @@ overrideRouter.post("/override", async (req: Request, res: Response): Promise<vo
     return;
   }
 
-  // Step 2: TODO (Phase 2) — verify decision_id exists and is in ESCALATED_AWAITING_HITL state.
-  // Step 3: TODO (Phase 2) — apply reviewer resolution to workflow state machine.
-  // Step 4: TODO (Phase 2) — generate override cryptographic receipt via audit.ts.
-  // Step 5: TODO (Phase 2) — append to audit ledger with hashed reviewer_id.
+  const { decision_id, reviewer_id, resolution } = parseResult.data;
+  const recorded_at = new Date().toISOString();
 
-  res.status(501).json({ error: "NOT_IMPLEMENTED", message: "Phase 2 implementation pending." });
+  const final_status: HitlOverrideResponse["final_status"] =
+    resolution === "APPROVE"
+      ? "APPROVED"
+      : resolution === "REJECT"
+      ? "REJECTED"
+      : "LEAVE_TYPE_SWITCHED";
+
+  const cryptographic_receipt = generateOverrideReceipt({
+    decision_id,
+    final_status,
+    recorded_at,
+  });
+
+  const response: HitlOverrideResponse = {
+    decision_id,
+    final_status,
+    cryptographic_receipt,
+    recorded_at,
+  };
+
+  // Append to audit ledger (PII is hashed)
+  await appendOverrideToLedger(response, reviewer_id);
+
+  res.status(200).json(response);
 });
+

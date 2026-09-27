@@ -619,8 +619,272 @@
     @media (max-width: 600px) {
       .form-grid.three, .form-grid.four { grid-template-columns: 1fr; }
       .stats-row { grid-template-columns: 1fr 1fr; }
+      .reviewer-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Modals (Policy & Standard Form) ───────────────────────── */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      padding: 16px;
+      animation: fadeIn .15s ease-out;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      width: 100%; max-width: 760px;
+      max-height: 88vh;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      animation: slideUp .2s ease-out;
+    }
+    .modal-header {
+      padding: 16px 22px;
+      background: #0f172a; color: white;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .modal-header h3 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .modal-close-btn {
+      background: none; border: none; color: #94a3b8; font-size: 18px;
+      cursor: pointer; padding: 4px 8px; border-radius: 6px; line-height: 1;
+    }
+    .modal-close-btn:hover { background: rgba(255,255,255,.1); color: white; }
+    .modal-body {
+      padding: 22px;
+      overflow-y: auto;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #334155;
+    }
+    .modal-footer {
+      padding: 14px 22px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 10px; align-items: center;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* ── Reviewer Portal ────────────────────────────────────────── */
+    .reviewer-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px 24px;
+      color: white;
+      margin-bottom: 22px;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .reviewer-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .case-item {
+      padding: 13px 15px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all .15s ease;
+      margin-bottom: 10px;
+    }
+    .case-item:hover {
+      border-color: #94a3b8;
+      background: #f8fafc;
+    }
+    .case-item.selected {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1.5px rgba(59,130,246,0.3);
+    }
+    .case-item-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .doc-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .doc-meta-table {
+      width: 100%; font-size: 12.5px; border-collapse: collapse; margin-top: 8px;
+    }
+    .doc-meta-table td { padding: 4px 0; vertical-align: top; }
+    .doc-meta-table td:first-child { width: 110px; color: var(--muted); font-weight: 500; }
+    .doc-meta-table td:last-child { color: var(--text); font-weight: 600; }
+
+    /* ── Quick Presets Toolbar ─────────────────────────────────── */
+    .quick-presets-bar {
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    }
+    .preset-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 11px; border-radius: 7px;
+      font-size: 11.5px; font-weight: 600;
+      background: white; border: 1px solid #cbd5e1; color: #1e293b;
+      cursor: pointer; transition: all .15s;
+    }
+    .preset-pill:hover {
+      border-color: #3b82f6; color: #2563eb; background: #eff6ff;
+    }
+
+    /* ── Login Portal Modal & Screen ────────────────────────────── */
+    .login-backdrop {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+      padding: 18px;
+      animation: fadeIn .2s ease-out;
+    }
+    .login-backdrop.open { display: flex; }
+    .login-card {
+      background: var(--surface);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      width: 100%; max-width: 840px;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      animation: slideUp .25s ease-out;
+    }
+    .login-header {
+      padding: 24px 28px;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      color: white;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      position: relative;
+    }
+    .login-body {
+      padding: 26px 28px;
+      background: #f8fafc;
+    }
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .role-card {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      cursor: pointer;
+      transition: all .2s ease;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+    }
+    .role-card:hover {
+      border-color: #93c5fd;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.12);
+    }
+    .role-card.active-role {
+      border-color: #3b82f6;
+      background: #f0f7ff;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.35);
+    }
+    .role-icon-box {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 12px;
+    }
+
+    /* User Profile Chip in Topbar & Sidebar */
+    .user-profile-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 600;
+      background: #f1f5f9; border: 1px solid #cbd5e1;
+      color: #1e293b;
+    }
+    .user-profile-badge.admin {
+      background: #fef3c7; border-color: #fde68a; color: #92400e;
+    }
+    .user-profile-badge.applicant {
+      background: #e0f2fe; border-color: #bae6fd; color: #0369a1;
+    }
+    .role-switch-btn {
+      background: white; border: 1px solid #cbd5e1;
+      border-radius: 6px; padding: 3px 8px; font-size: 11px;
+      color: #475569; cursor: pointer; font-weight: 700;
+      transition: all .15s;
+    }
+    .role-switch-btn:hover {
+      background: #f8fafc; color: #0f172a; border-color: #94a3b8;
+    }
+
+    /* ── Upload Box & Attached File Chips ──────────────────────── */
+    .upload-zone-box {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      display: flex; align-items: center; gap: 14px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: #f8fafc;
+    }
+    .upload-zone-box:hover, .upload-zone-box.dragover {
+      border-color: var(--accent);
+      background: #eff6ff;
+    }
+    .file-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border-radius: 8px;
+      background: white; border: 1px solid var(--border);
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+      font-size: 12px; font-weight: 600; color: var(--text);
+    }
+
+    /* ── Submission Confirmation Card ──────────────────────────── */
+    .submission-confirm-card {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      margin-top: 18px;
+      animation: fadeIn .2s ease-out;
+    }
+
+    /* ── Role-based Access Control Visibility ───────────────────── */
+    body.role-applicant .role-admin-only { display: none !important; }
+    body.role-admin .role-applicant-only { display: none !important; }
+
+    .role-badge-tag {
+      font-size: 10px; font-weight: 800; padding: 2px 7px;
+      border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .role-badge-tag.applicant {
+      background: #e0f2fe; color: #0369a1;
+    }
+    .role-badge-tag.admin {
+      background: #fef3c7; color: #92400e;
+    }
+    .stat-chip-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      background: white; border: 1px solid var(--border);
     }
   </style>
+
+
 </head>
 <body>
 
@@ -636,47 +900,120 @@
     </div>
     <div class="sidebar-brand-text">
       <h1>ClearFlowHR</h1>
-      <p>AER Dashboard · v1.1</p>
+      <p>AER Referee System</p>
+    </div>
+  </div>
+
+  <!-- User Profile Box in Sidebar -->
+  <div style="padding: 12px 14px 6px">
+    <div style="background: white; border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px">
+      <div style="display:flex; align-items:center; gap:8px; overflow:hidden">
+        <div id="sidebar-user-avatar" style="width:32px; height:32px; border-radius:50%; background:#e0f2fe; color:#0369a1; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; flex-shrink:0">
+          👤
+        </div>
+        <div style="overflow:hidden">
+          <div id="sidebar-user-name" style="font-size:12px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
+            Nguyễn Thị Hương
+          </div>
+          <div id="sidebar-user-role-label" style="font-size:10.5px; color:var(--muted)">
+            Nhân Viên (Applicant)
+          </div>
+        </div>
+      </div>
+      <button type="button" class="role-switch-btn" onclick="openLoginModal()" title="Chuyển đổi giữa Nhân Viên và Quản Trị Viên">
+        Đổi ⇄
+      </button>
     </div>
   </div>
 
   <nav>
-    <div class="nav-label">Workspace</div>
-    <a id="nav-evaluate" class="active" onclick="navigate('evaluate')">
+    <div class="nav-label">Khu Vực Phân Quyền</div>
+
+    <!-- ── APPLICANT-ONLY NAVIGATION ────────────────────────── -->
+    <a id="nav-evaluate" class="active role-applicant-only" onclick="navigate('evaluate')">
       <span class="nav-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="18" x2="12" y2="12"></line>
+          <line x1="9" y1="15" x2="15" y2="15"></line>
         </svg>
       </span>
-      Evaluate Request
+      Nộp Đơn (PDF + Minh Chứng)
+      <span class="nav-badge" style="background:#e0f2fe;color:#0369a1">Applicant</span>
     </a>
-    <a id="nav-history" onclick="navigate('history')">
+
+    <a id="nav-my-requests" class="role-applicant-only" onclick="navigate('my-requests')">
+      <span class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </span>
+      Đơn Của Tôi (My Requests)
+      <span class="nav-badge" id="my-requests-count" style="background:#dbeafe;color:#1e40af"></span>
+    </a>
+
+    <!-- ── ADMIN-ONLY NAVIGATION ───────────────────────────── -->
+    <a id="nav-reviewer" class="role-admin-only" onclick="navigate('reviewer')">
+      <span class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </span>
+      Duyệt Hồ Sơ (Reviewer)
+      <span class="nav-badge" style="background:#fef3c7;color:#92400e">Admin</span>
+    </a>
+
+    <a id="nav-history" class="role-admin-only" onclick="navigate('history')">
       <span class="nav-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
         </svg>
       </span>
-      History
+      Sổ Cái Kiểm Toán (Ledger)
       <span class="nav-badge" id="history-count"></span>
     </a>
-    <a id="nav-smoke" onclick="navigate('smoke')">
+
+    <a id="nav-smoke" class="role-admin-only" onclick="navigate('smoke')">
       <span class="nav-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
         </svg>
       </span>
-      Smoke Tests
+      Smoke Tests (5 Cases)
     </a>
 
-    <div class="nav-label" style="margin-top:16px">AI Tools</div>
-    <a id="nav-vlm" onclick="navigate('vlm')">
+    <div class="nav-label" style="margin-top:16px">Tài Liệu &amp; Biểu Mẫu</div>
+    <a onclick="openPolicyModal()">
+      <span class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </span>
+      Quy Chế Nhân Sự
+    </a>
+    <a onclick="openStandardFormModal()">
+      <span class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+      </span>
+      Biểu Mẫu Chuẩn (BM-HR)
+    </a>
+
+    <div class="nav-label role-admin-only" style="margin-top:16px">AI Engine</div>
+    <a id="nav-vlm" class="role-admin-only" onclick="navigate('vlm')">
       <span class="nav-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
         </svg>
       </span>
       OCR / VLM Tester
-      <span class="nav-badge" style="background:rgba(99,102,241,.15);color:#818cf8">NEW</span>
+      <span class="nav-badge" style="background:rgba(99,102,241,.15);color:#818cf8">Gemma 4</span>
     </a>
   </nav>
 
@@ -698,9 +1035,23 @@
 <div id="main">
   <div class="topbar">
     <div class="topbar-left">
-      <h2 id="topbar-title">Evaluate Leave Request</h2>
+      <h2 id="topbar-title">Nộp Đơn Xin Nghỉ (Applicant)</h2>
     </div>
-    <div class="topbar-right">
+    <div class="topbar-right" style="display:flex; align-items:center; gap:10px">
+      <!-- Active User Profile Pill with Switch button -->
+      <div class="user-profile-badge" id="topbar-user-badge" onclick="openLoginModal()" style="cursor:pointer" title="Bấm để chuyển đổi vai trò">
+        <span id="topbar-user-avatar">👤</span>
+        <span id="topbar-user-name" style="font-weight:700">Nguyễn Thị Hương</span>
+        <span class="role-badge-tag applicant" id="topbar-user-role-tag">Nhân Viên</span>
+        <span style="font-size:11px; color:#2563eb; margin-left:4px; font-weight:700">Đổi vai trò ⇄</span>
+      </div>
+
+      <button type="button" class="btn btn-outline" style="padding:6px 12px; font-size:12px; display:inline-flex; align-items:center; gap:6px" onclick="openPolicyModal()">
+        <span>📖</span> Quy Chế Nhân Sự
+      </button>
+      <button type="button" class="btn btn-outline" style="padding:6px 12px; font-size:12px; display:inline-flex; align-items:center; gap:6px" onclick="openStandardFormModal()">
+        <span>📄</span> Biểu Mẫu Chuẩn
+      </button>
       <div class="status-indicator">
         <span class="dot"></span>
         AER Engine Online
@@ -710,14 +1061,138 @@
 
   <div class="content">
 
+    <!-- ── SECTION: MY REQUESTS (DÀNH CHO NHÂN VIÊN) ────────── -->
+    <section id="section-my-requests" class="section">
+      <div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px">
+        <div>
+          <h2>Đơn Xin Nghỉ Của Tôi (My Submissions)</h2>
+          <p>Theo dõi tiến độ xử lý tự động &lt;10ms, trạng thái phân xử của Quản lý HR và biên lai mã hóa SHA-256.</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="navigate('evaluate')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nộp Đơn Nghỉ Mới
+        </button>
+      </div>
+
+      <!-- Applicant stats overview -->
+      <div style="display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap">
+        <div class="stat-chip-pill">
+          <span style="color:var(--muted)">Tổng số đơn đã nộp:</span>
+          <strong id="my-stat-total" style="color:var(--text)">0</strong>
+        </div>
+        <div class="stat-chip-pill" style="border-color:#bbf7d0; background:#f0fdf4">
+          <span style="color:#166534">✓ Tự động duyệt:</span>
+          <strong id="my-stat-approved" style="color:#15803d">0</strong>
+        </div>
+        <div class="stat-chip-pill" style="border-color:#fde68a; background:#fffbeb">
+          <span style="color:#92400e">⚠️ Chờ HR phê duyệt:</span>
+          <strong id="my-stat-escalated" style="color:#b45309">0</strong>
+        </div>
+        <div class="stat-chip-pill" style="border-color:#fecaca; background:#fef2f2">
+          <span style="color:#991b1b">✕ Bị từ chối:</span>
+          <strong id="my-stat-rejected" style="color:#b91c1c">0</strong>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0; overflow:hidden">
+        <div id="my-requests-content">
+          <div class="empty-state" style="padding:50px 20px">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <p>Bạn chưa gửi đơn xin nghỉ nào. Bấm nút <strong>"Nộp Đơn Nghỉ Mới"</strong> để gửi đơn đầu tiên.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION: REVIEWER (DUYỆT HỒ SƠ) ────────────────── -->
+    <section id="section-reviewer" class="section">
+      <div class="reviewer-banner">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+            <span style="background:#f59e0b; color:#0f172a; font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px; text-transform:uppercase; letter-spacing:0.05em">
+              🛡️ CẤP TRÊN (TRƯỞNG PHÒNG / HR / GIÁM ĐỐC)
+            </span>
+            <span style="font-size:12px; color:#cbd5e1">
+              VLM Engine: <strong style="color:#a78bfa">Gemma 4 26B A4B</strong> · Latency &lt; 10ms (Deterministic)
+            </span>
+          </div>
+          <h2 style="font-size:20px; font-weight:800; color:white; margin:0">
+            Bảng Điều Khiển Xét Duyệt Đơn &amp; Bằng Chứng
+          </h2>
+          <p style="font-size:12.5px; color:#94a3b8; margin-top:4px; max-width:680px; line-height:1.5">
+            Mỗi ca được quản lý theo thư mục hồ sơ riêng biệt gồm file Đơn (PDF) và Chứng từ y tế (C65-HD). Hệ thống tự động thẩm định theo 3 nhóm bất định (U1/U2/U3) và kích hoạt phân xử đơn lượt (Single-turn Human-in-the-Loop) có ký số SHA-256.
+          </p>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px">
+          <button type="button" class="btn btn-primary" id="btn-reviewer-check-all" onclick="runReviewerCheckAll()" style="background:#f59e0b; color:#0f172a; font-weight:700">
+            <span>⚡⚡</span> Chạy Toàn Bộ (Agent Check All)
+          </button>
+        </div>
+      </div>
+
+      <div class="reviewer-grid">
+        <!-- Left: Case Folders List -->
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px">
+            <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted)">
+              Danh Sách Hồ Sơ Nghỉ (<span id="reviewer-case-count">5</span>)
+            </span>
+            <span style="font-size:11.5px; color:var(--muted)">Click để đối soát</span>
+          </div>
+
+          <div id="reviewer-cases-list"></div>
+        </div>
+
+        <!-- Right: Active Case Details & Inspector -->
+        <div>
+          <div class="card" style="margin-bottom:0; padding:22px">
+            <div id="reviewer-case-detail">
+              <div style="text-align:center; padding:40px 20px; color:var(--muted)">
+                Chọn một hồ sơ bên trái để đối soát và thẩm định
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── SECTION: EVALUATE ──────────────────────────────── -->
     <section id="section-evaluate" class="section active">
       <div class="section-header">
-        <h2>Submit Leave Request</h2>
+        <h2>Submit Leave Request (Applicant)</h2>
         <p>Fill in employee details and leave parameters to receive an automated AER decision.</p>
       </div>
 
+      <!-- Quick Presets Toolbar -->
+      <div class="quick-presets-bar">
+        <div style="font-size:12.5px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:6px">
+          <span>⚡</span> Nạp Nhanh Hồ Sơ Mẫu (Quick Presets):
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px">
+          <button type="button" class="preset-pill" onclick="loadEvalPreset('CASE-04')">
+            <span>🟢</span> Phép năm hợp lệ - 1 ngày (Nguyễn Thị Hương)
+          </button>
+          <button type="button" class="preset-pill" onclick="loadEvalPreset('CASE-01')">
+            <span>🟡</span> Nghỉ ốm kèm C65-HD - 10 ngày (Lê Thị Phương)
+          </button>
+          <button type="button" class="preset-pill" onclick="loadEvalPreset('CASE-02')">
+            <span>🔴</span> Nghỉ ốm thiếu C65-HD - 6 ngày (U1_DATA)
+          </button>
+          <button type="button" class="preset-pill" onclick="loadEvalPreset('CASE-03')">
+            <span>🟠</span> Nghỉ không lương 20 ngày (U3_AUTHORITY)
+          </button>
+          <button type="button" class="preset-pill" onclick="loadEvalPreset('PROBATION')">
+            <span>🟣</span> Thử việc xin phép năm (REJECT)
+          </button>
+        </div>
+      </div>
+
       <div class="card">
+
         <div class="card-title">
           <span class="card-title-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -790,49 +1265,83 @@
             </div>
           </div>
 
-          <!-- ── Supporting Documents ───────────────────────── -->
-          <div class="form-grid" style="margin-top:14px">
+          <!-- ── Supporting Documents & Form Upload ─────────────────── -->
+          <div class="form-grid" style="margin-top:16px">
             <div class="form-section-divider">
-              <span>Supporting Documents <span style="font-weight:400;color:#94a3b8">(optional · triggers OCR via VLM)</span></span>
+              <span>Hồ Sơ Đính Kèm (Form Đơn PDF &amp; Tài Liệu Minh Chứng)</span>
             </div>
           </div>
 
-          <!-- Drop zone -->
-          <div id="eval-drop-zone"
-               style="border:2px dashed var(--border);border-radius:8px;padding:20px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .2s,background .2s;background:#f8fafc"
-               onclick="document.getElementById('eval-doc-file').click()"
-               ondragover="evalDocDragOver(event)" ondragleave="evalDocDragLeave()" ondrop="evalDocDrop(event)">
-            <div style="color:var(--muted);opacity:.5;flex-shrink:0">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-              </svg>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:6px">
+            <!-- Box 1: Form PDF -->
+            <div style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:14px">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+                <label style="font-weight:700; font-size:12.5px; color:#1e293b; display:flex; align-items:center; gap:6px; margin:0">
+                  <span>📄</span> 1. Tệp Đơn Xin Nghỉ (PDF)
+                </label>
+                <button type="button" class="btn btn-outline" style="font-size:11px; padding:3px 8px" onclick="loadSampleFormPdf()">
+                  ⚡ Nạp tệp mẫu PDF
+                </button>
+              </div>
+              <p style="font-size:11.5px; color:var(--muted); margin:0 0 10px">Tải lên file Đơn xin nghỉ theo mẫu BM-HR-01 (định dạng PDF)</p>
+              
+              <div id="eval-pdf-drop-zone" class="upload-zone-box" onclick="document.getElementById('eval-pdf-file').click()"
+                   ondragover="evalPdfDragOver(event)" ondragleave="evalPdfDragLeave()" ondrop="evalPdfDrop(event)">
+                <div style="color:#ef4444; opacity:.8; flex-shrink:0; font-size:24px">📄</div>
+                <div>
+                  <p style="font-size:12.5px; font-weight:600; color:var(--text); margin:0">Chọn hoặc thả tệp PDF vào đây</p>
+                  <span style="font-size:11px; color:var(--muted)">Chỉ nhận file .pdf · Tối đa 10MB</span>
+                </div>
+              </div>
+              <input type="file" id="eval-pdf-file" accept="application/pdf" style="display:none" onchange="evalPdfFileSelected(event)">
+
+              <!-- PDF preview chip -->
+              <div id="eval-pdf-preview" style="margin-top:10px; display:none"></div>
             </div>
-            <div>
-              <p style="font-size:13px;font-weight:500;color:var(--text)">Attach C65-HD form or medical certificate</p>
-              <span style="font-size:12px;color:var(--muted)">Drag &amp; drop or click · JPEG, PNG, WEBP · Multiple files allowed</span>
+
+            <!-- Box 2: Proof Document (C65-HD / Images / PDF) -->
+            <div style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:14px">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+                <label style="font-weight:700; font-size:12.5px; color:#1e293b; display:flex; align-items:center; gap:6px; margin:0">
+                  <span>🩺</span> 2. Tài Liệu Minh Chứng (Proof)
+                </label>
+                <button type="button" class="btn btn-outline" style="font-size:11px; padding:3px 8px" onclick="loadSampleProofImage()">
+                  ⚡ Nạp ảnh C65-HD mẫu
+                </button>
+              </div>
+              <p style="font-size:11.5px; color:var(--muted); margin:0 0 10px">Giấy C65-HD, giấy ra viện hoặc giấy tờ liên quan (Ảnh / PDF)</p>
+
+              <div id="eval-doc-drop-zone" class="upload-zone-box" onclick="document.getElementById('eval-doc-file').click()"
+                   ondragover="evalDocDragOver(event)" ondragleave="evalDocDragLeave()" ondrop="evalDocDrop(event)">
+                <div style="color:#0284c7; opacity:.8; flex-shrink:0; font-size:24px">🩺</div>
+                <div>
+                  <p style="font-size:12.5px; font-weight:600; color:var(--text); margin:0">Chọn hoặc thả ảnh / PDF minh chứng</p>
+                  <span style="font-size:11px; color:var(--muted)">JPEG, PNG, WEBP, PDF · Có thể chọn nhiều tệp</span>
+                </div>
+              </div>
+              <input type="file" id="eval-doc-file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple style="display:none" onchange="evalDocFileSelected(event)">
+
+              <!-- Thumbnail strip -->
+              <div id="eval-doc-thumbs" style="display:none; margin-top:10px; display:flex; flex-wrap:wrap; gap:8px"></div>
             </div>
           </div>
-          <input type="file" id="eval-doc-file" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="evalDocFileSelected(event)">
 
-          <!-- Thumbnail strip (shown when files are attached) -->
-          <div id="eval-doc-thumbs" style="display:none;margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
-
-          <!-- VLM notice (shown when ≥1 doc attached) -->
-          <div id="eval-vlm-notice" style="display:none;margin-top:10px;padding:9px 14px;border-radius:7px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);font-size:12.5px;color:#78350f;display:flex;align-items:center;gap:8px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+          <!-- VLM notice banner -->
+          <div id="eval-vlm-notice" style="display:none; margin-top:14px; padding:10px 14px; border-radius:8px; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.25); font-size:12.5px; color:#78350f; display:flex; align-items:center; gap:8px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
               <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
             </svg>
-            <span id="eval-vlm-notice-text">1 document attached — VLM OCR (Gemma 4 26B A4B) will run during evaluation</span>
+            <span id="eval-vlm-notice-text">Tài liệu đã đính kèm — Hệ thống AER sẽ kiểm tra mộc đỏ và chữ ký tự động qua Gemma 4 26B A4B VLM.</span>
           </div>
 
           <div style="margin-top:20px; display:flex; gap:10px; align-items:center">
-            <button type="submit" class="btn btn-primary" id="submit-btn">
+            <button type="submit" class="btn btn-primary" id="submit-btn" style="padding:10px 20px; font-weight:700">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
-              Submit Request
+              Gửi Đơn Xin Nghỉ (Submit Request)
             </button>
-            <button type="button" class="btn btn-outline" onclick="resetForm()">Reset</button>
+            <button type="button" class="btn btn-outline" onclick="resetForm()">Làm Lại (Reset)</button>
           </div>
         </form>
       </div>
@@ -843,31 +1352,31 @@
     <!-- ── SECTION: HISTORY ──────────────────────────────── -->
     <section id="section-history" class="section">
       <div class="section-header">
-        <h2>Evaluation History</h2>
-        <p>Last 20 evaluations stored locally in your browser.</p>
+        <h2>Sổ Cái Kiểm Toán &amp; Lịch Sử Phân Xử (Audit Ledger)</h2>
+        <p>Lưu trữ toàn bộ giao dịch phân xử tự động (&lt;10ms) và các quyết định can thiệp (HITL Override) có ký số SHA-256 bất biến.</p>
       </div>
 
       <!-- Stats row -->
       <div class="stats-row" id="stats-row" style="display:none">
         <div class="stat-card">
-          <label>Total Evaluations</label>
+          <label>Tổng Số Giao Dịch</label>
           <div class="stat-val" id="stat-total">0</div>
-          <div class="stat-sub">all time (local)</div>
+          <div class="stat-sub">trên sổ cái kiểm toán</div>
         </div>
         <div class="stat-card approve-stat">
-          <label>Auto Approved</label>
+          <label>Tự Động Phê Duyệt</label>
           <div class="stat-val" id="stat-approve">0</div>
-          <div class="stat-sub">passed all checks</div>
+          <div class="stat-sub">hợp lệ theo quy chế</div>
         </div>
         <div class="stat-card escalate-stat">
-          <label>Escalated</label>
+          <label>Điểm Dừng (Escalate)</label>
           <div class="stat-val" id="stat-escalate">0</div>
-          <div class="stat-sub">HITL required</div>
+          <div class="stat-sub" id="stat-escalate-sub">cần cấp trên xử lý</div>
         </div>
         <div class="stat-card reject-stat">
-          <label>Rejected</label>
+          <label>Từ Chối (Reject)</label>
           <div class="stat-val" id="stat-reject">0</div>
-          <div class="stat-sub">rule violation</div>
+          <div class="stat-sub">vi phạm quy chế</div>
         </div>
       </div>
 
@@ -1034,23 +1543,949 @@
   }
   initDates();
 
-  // ── Navigation ──────────────────────────────────────────────
+  // ── Navigation & Section Titles ────────────────────────────
   const SECTION_TITLES = {
-    evaluate: 'Evaluate Leave Request',
-    history:  'Evaluation History',
-    smoke:    'Smoke Tests',
-    vlm:      'OCR / VLM Tester',
+    'my-requests': 'Đơn Xin Nghỉ Của Tôi (My Submissions)',
+    reviewer:      'Reviewer Portal — Xét Duyệt Hồ Sơ & Quyết Định Phân Xử',
+    evaluate:      'Nộp Đơn Xin Nghỉ Phép (Applicant Portal)',
+    history:       'Lịch Sử Phân Xử & Sổ Cái (Audit Ledger)',
+    smoke:         'Smoke Tests (5 Canonical Cases)',
+    vlm:           'OCR / VLM Tester (Gemma 4 26B A4B)',
   };
 
   function navigate(key) {
     Object.keys(SECTION_TITLES).forEach(k => {
-      document.getElementById('section-' + k).classList.toggle('active', k === key);
+      const sec = document.getElementById('section-' + k);
+      if (sec) sec.classList.toggle('active', k === key);
       const nav = document.getElementById('nav-' + k);
       if (nav) nav.classList.toggle('active', k === key);
     });
-    document.getElementById('topbar-title').textContent = SECTION_TITLES[key];
+    document.getElementById('topbar-title').textContent = SECTION_TITLES[key] || 'ClearFlowHR';
     if (key === 'history') renderHistory();
+    if (key === 'reviewer') renderReviewer();
+    if (key === 'my-requests') renderMyRequests();
   }
+
+  // ── User Profiles & Role Authentication State ───────────────
+  const PROFILES = {
+    applicant_huong: {
+      id: 'NV-2024-0312',
+      name: 'Nguyễn Thị Hương',
+      role: 'applicant',
+      roleLabel: 'Nhân Viên (Applicant)',
+      department: 'Phòng Kinh doanh',
+      status: 'CONFIRMED',
+      annualRemaining: 4,
+      sickRemaining: 30,
+      maternityRemaining: 26,
+      unpaidUsed: 0
+    },
+    applicant_phuong: {
+      id: 'NV-1981-0592',
+      name: 'Lê Thị Phương',
+      role: 'applicant',
+      roleLabel: 'Nhân Viên (Applicant)',
+      department: 'Phòng Kế hoạch & Quản lý Sản xuất',
+      status: 'CONFIRMED',
+      annualRemaining: 12,
+      sickRemaining: 30,
+      maternityRemaining: 26,
+      unpaidUsed: 0
+    },
+    admin_quanly: {
+      id: 'HR-ADMIN-01',
+      name: 'Nguyễn Quản Lý',
+      role: 'admin',
+      roleLabel: 'Trưởng Ban HR (Admin)',
+      department: 'Phòng Quản trị Nhân sự & Tuân thủ',
+      status: 'CONFIRMED'
+    },
+    admin_giamdoc: {
+      id: 'BOD-EXEC-02',
+      name: 'Trần Giám Đốc',
+      role: 'admin',
+      roleLabel: 'Giám Đốc Khối Vận Hành',
+      department: 'Ban Giám Đốc Điều Hành',
+      status: 'CONFIRMED'
+    }
+  };
+
+  let currentRole = localStorage.getItem('aer_current_role') || 'applicant';
+  let currentUserKey = localStorage.getItem('aer_current_user') || 'applicant_huong';
+
+  function getActiveProfile() {
+    return PROFILES[currentUserKey] || PROFILES.applicant_huong;
+  }
+
+  function applyRoleUI() {
+    const prof = getActiveProfile();
+    document.body.className = currentRole === 'admin' ? 'role-admin' : 'role-applicant';
+
+    // Sidebar updates
+    const sideAvatar = document.getElementById('sidebar-user-avatar');
+    const sideName   = document.getElementById('sidebar-user-name');
+    const sideRole   = document.getElementById('sidebar-user-role-label');
+    if (sideAvatar) sideAvatar.textContent = currentRole === 'admin' ? '🛡️' : '👤';
+    if (sideName) sideName.textContent = prof.name;
+    if (sideRole) sideRole.textContent = prof.roleLabel;
+
+    // Topbar updates
+    const topAvatar  = document.getElementById('topbar-user-avatar');
+    const topName    = document.getElementById('topbar-user-name');
+    const topRoleTag = document.getElementById('topbar-user-role-tag');
+    if (topAvatar) topAvatar.textContent = currentRole === 'admin' ? '🛡️' : '👤';
+    if (topName) topName.textContent = prof.name;
+    if (topRoleTag) {
+      topRoleTag.textContent = currentRole === 'admin' ? 'HR Admin' : 'Nhân Viên';
+      topRoleTag.className = 'role-badge-tag ' + (currentRole === 'admin' ? 'admin' : 'applicant');
+    }
+
+    // Modal role card selection
+    selectLoginRole(currentRole);
+
+    // Pre-populate Evaluate form if in Applicant role
+    if (currentRole === 'applicant') {
+      const nameInput = document.getElementById('f-name');
+      const statusSelect = document.getElementById('f-status');
+      const annualInput = document.getElementById('f-annual');
+      const sickInput = document.getElementById('f-sick');
+      const matInput = document.getElementById('f-mat');
+      const unpaidInput = document.getElementById('f-unpaid');
+
+      if (nameInput) nameInput.value = prof.name;
+      if (statusSelect) statusSelect.value = prof.status;
+      if (annualInput && prof.annualRemaining !== undefined) annualInput.value = prof.annualRemaining;
+      if (sickInput && prof.sickRemaining !== undefined) sickInput.value = prof.sickRemaining;
+      if (matInput && prof.maternityRemaining !== undefined) matInput.value = prof.maternityRemaining;
+      if (unpaidInput && prof.unpaidUsed !== undefined) unpaidInput.value = prof.unpaidUsed;
+    }
+  }
+
+  function openLoginModal() {
+    const el = document.getElementById('modal-login');
+    if (el) el.classList.add('open');
+  }
+
+  function closeLoginModal() {
+    const el = document.getElementById('modal-login');
+    if (el) el.classList.remove('open');
+  }
+
+  function selectLoginRole(role) {
+    const cardApp = document.getElementById('login-role-card-applicant');
+    const cardAdm = document.getElementById('login-role-card-admin');
+    if (cardApp) cardApp.classList.toggle('active-role', role === 'applicant');
+    if (cardAdm) cardAdm.classList.toggle('active-role', role === 'admin');
+  }
+
+  function submitLoginRole(role) {
+    currentRole = role;
+    localStorage.setItem('aer_current_role', role);
+
+    if (role === 'applicant') {
+      const sel = document.getElementById('login-applicant-select');
+      currentUserKey = sel ? sel.value : 'applicant_huong';
+      localStorage.setItem('aer_current_user', currentUserKey);
+      applyRoleUI();
+      closeLoginModal();
+      navigate('evaluate');
+    } else {
+      const sel = document.getElementById('login-admin-select');
+      currentUserKey = sel ? sel.value : 'admin_quanly';
+      localStorage.setItem('aer_current_user', currentUserKey);
+      applyRoleUI();
+      closeLoginModal();
+      navigate('reviewer');
+    }
+  }
+
+  // ── Case Folders (Reference Dataset for Reviewer Portal) ──
+  const CASE_FOLDERS = [
+    {
+      id: 'CASE-01',
+      folderName: 'case_01_le_thi_phuong',
+      applicantName: 'Lê Thị Phương',
+      applicantId: 'NV-1981-0592',
+      department: 'Phòng Kế hoạch & Quản lý Sản xuất',
+      employmentStatus: 'CONFIRMED',
+      leaveType: 'SICK',
+      leaveTypeLabel: 'Nghỉ ốm / Chế độ BHXH',
+      fromDate: '2022-01-21',
+      toDate: '2022-01-30',
+      days: 10,
+      durationLabel: '10 ngày làm việc',
+      reason: 'Nhiễm SARS-COV-2 (điều trị ngoại trú cách ly tại nhà theo chỉ định y tế).',
+      notes: 'Nộp kèm Giấy chứng nhận nghỉ việc hưởng BHXH (Mẫu CT07 / C65-HD). Có dấu mộc đỏ Trạm Y Tế và chữ ký Bác sĩ.',
+      annualRemaining: 12,
+      sickRemaining: 30,
+      maternityRemaining: 26,
+      unpaidUsed: 0,
+      pdfFile: {
+        fileName: 'don_nghi_om_le_thi_phuong.pdf',
+        filePath: '/cases/case_01_le_thi_phuong/don_nghi_om_le_thi_phuong.pdf',
+        title: 'Đơn Xin Nghỉ Ốm Điều Trị Covid-19',
+        docCode: 'BM-HR-01 · VB-2022-0148',
+      },
+      evidenceFile: {
+        fileName: 'bang_chung_le_thi_phuong.jpg',
+        filePath: '/cases/case_01_le_thi_phuong/bang_chung_le_thi_phuong.jpg',
+        title: 'Giấy chứng nhận nghỉ việc hưởng BHXH (Mẫu CT07 / C65-HD)',
+        formType: 'C65-HD',
+      }
+    },
+    {
+      id: 'CASE-02',
+      folderName: 'case_02_truong_minh_tri',
+      applicantName: 'Trương Minh Trí',
+      applicantId: 'NV-2020-0019',
+      department: 'Phòng Kinh doanh',
+      employmentStatus: 'CONFIRMED',
+      leaveType: 'SICK',
+      leaveTypeLabel: 'Nghỉ ốm/chế độ',
+      fromDate: '2025-11-01',
+      toDate: '2025-11-07',
+      days: 6,
+      durationLabel: '6 ngày làm việc',
+      reason: 'Nghỉ ốm phẫu thuật ruột thừa tại Bệnh viện Nhân dân Gia Định.',
+      notes: 'Mới nộp Giấy ra viện photocopy. Chưa nộp Giấy chứng nhận nghỉ việc hưởng BHXH (mẫu C65-HD có mộc đỏ).',
+      annualRemaining: 8,
+      sickRemaining: 30,
+      maternityRemaining: 26,
+      unpaidUsed: 0,
+      pdfFile: {
+        fileName: 'don_nghi_om_truong_minh_tri.pdf',
+        filePath: '/cases/case_02_truong_minh_tri/don_nghi_om_truong_minh_tri.pdf',
+        title: 'Đơn Xin Nghỉ Ốm Phẫu Thuật',
+        docCode: 'BM-HR-01 · VB-2025-0012',
+      },
+      evidenceFile: null
+    },
+    {
+      id: 'CASE-03',
+      folderName: 'case_03_hoang_van_binh',
+      applicantName: 'Hoàng Văn Bình',
+      applicantId: 'NV-2021-0034',
+      department: 'Phòng Vận hành',
+      employmentStatus: 'CONFIRMED',
+      leaveType: 'UNPAID',
+      leaveTypeLabel: 'Nghỉ không lương',
+      fromDate: '2025-11-10',
+      toDate: '2025-12-05',
+      days: 20,
+      durationLabel: '20 ngày làm việc',
+      reason: 'Xin nghỉ không lương dài hạn để chăm sóc người thân bị bệnh nặng.',
+      notes: 'Bản cam kết bàn giao tiến độ vận hành. Thời gian nghỉ 20 ngày liên tục (vượt hạn mức quản lý trực tiếp).',
+      annualRemaining: 0,
+      sickRemaining: 30,
+      maternityRemaining: 26,
+      unpaidUsed: 0,
+      pdfFile: {
+        fileName: 'don_nghi_khong_luong_hoang_van_binh.pdf',
+        filePath: '/cases/case_03_hoang_van_binh/don_nghi_khong_luong_hoang_van_binh.pdf',
+        title: 'Đơn Nghỉ Không Lương Dài Hạn (20 ngày)',
+        docCode: 'BM-HR-01 · VB-2025-0034',
+      },
+      evidenceFile: null
+    },
+    {
+      id: 'CASE-04',
+      folderName: 'case_04_nguyen_thi_huong',
+      applicantName: 'Nguyễn Thị Hương',
+      applicantId: 'NV-2024-0312',
+      department: 'Phòng Kinh doanh',
+      employmentStatus: 'CONFIRMED',
+      leaveType: 'ANNUAL',
+      leaveTypeLabel: 'Nghỉ phép năm',
+      fromDate: '2025-10-15',
+      toDate: '2025-10-15',
+      days: 1,
+      durationLabel: '1 ngày làm việc',
+      reason: 'Nghỉ phép năm theo kế hoạch cá nhân, nộp trước 3 ngày làm việc.',
+      notes: 'Xác nhận số dư phép năm còn 4 ngày hợp lệ. Đã bàn giao công việc kinh doanh.',
+      annualRemaining: 4,
+      sickRemaining: 30,
+      maternityRemaining: 26,
+      unpaidUsed: 0,
+      pdfFile: {
+        fileName: 'don_phep_nam_nguyen_thi_huong.pdf',
+        filePath: '/cases/case_04_nguyen_thi_huong/don_phep_nam_nguyen_thi_huong.pdf',
+        title: 'Đơn Nghỉ Phép Năm Hợp Lệ (1 ngày)',
+        docCode: 'BM-HR-01 · VB-2025-0089',
+      },
+      evidenceFile: null
+    },
+    {
+      id: 'CASE-05',
+      folderName: 'case_05_tran_van_c',
+      applicantName: 'Trần Văn C',
+      applicantId: 'NV-2025-0991',
+      department: 'Phòng Kỹ thuật & Hạ tầng',
+      employmentStatus: 'PROBATION',
+      leaveType: 'ANNUAL',
+      leaveTypeLabel: 'Nghỉ phép năm (Thử việc)',
+      fromDate: '2025-11-20',
+      toDate: '2025-11-21',
+      days: 2,
+      durationLabel: '2 ngày làm việc',
+      reason: 'Việc gia đình riêng.',
+      notes: 'Nhân viên đang trong thời gian thử việc 60 ngày. Chưa ký hợp đồng lao động chính thức (Vi phạm Điều 8.2).',
+      annualRemaining: 0,
+      sickRemaining: 30,
+      maternityRemaining: 26,
+      unpaidUsed: 0,
+      pdfFile: {
+        fileName: 'don_phep_nam_nguyen_thi_huong.pdf',
+        filePath: '/cases/case_04_nguyen_thi_huong/don_phep_nam_nguyen_thi_huong.pdf',
+        title: 'Đơn Xin Nghỉ Phép Năm',
+        docCode: 'BM-HR-01 · VB-2025-0991',
+      },
+      evidenceFile: null
+    }
+  ];
+
+  let selectedReviewerCaseId = 'CASE-01';
+  let reviewerEvalStates = {};
+
+  function getAllReviewerCases() {
+    const applicantSubmissions = loadMyRequests().map(sub => ({
+      id: sub.id,
+      folderName: sub.id.toLowerCase().replace(/-/g, '_'),
+      applicantName: sub.applicant_name,
+      applicantId: sub.applicant_id || 'NV-APP-USER',
+      department: sub.department || 'Phòng Kinh Doanh',
+      employmentStatus: sub.employment_status,
+      leaveType: sub.leave_type,
+      leaveTypeLabel: sub.leave_type_label || sub.leave_type,
+      fromDate: sub.from_date,
+      toDate: sub.to_date,
+      days: sub.days,
+      durationLabel: sub.duration_label || `${sub.days} ngày làm việc`,
+      reason: sub.reason || 'Đơn nộp trực tuyến qua Cổng Applicant',
+      notes: 'Hồ sơ do Nhân viên nộp trực tuyến (kèm file PDF và minh chứng)',
+      annualRemaining: 4,
+      sickRemaining: 30,
+      maternityRemaining: 26,
+      unpaidUsed: 0,
+      pdfFile: sub.pdf_file ? {
+        fileName: sub.pdf_file.fileName || sub.pdf_file.name || 'don_nghi.pdf',
+        filePath: sub.pdf_file.filePath || sub.pdf_file.dataUrl,
+        title: 'Đơn Xin Nghỉ Phép (PDF)',
+        docCode: sub.id
+      } : {
+        fileName: 'don_phep_nam.pdf',
+        filePath: '/documents/don_phep_nam_nguyen_thi_huong.pdf',
+        title: 'Đơn Xin Nghỉ Phép',
+        docCode: sub.id
+      },
+      evidenceFile: (sub.proof_files && sub.proof_files.length > 0) ? {
+        fileName: sub.proof_files[0].name,
+        filePath: sub.proof_files[0].content_ref || sub.proof_files[0].filePath,
+        title: 'Giấy chứng nhận y tế / Minh chứng',
+        formType: 'C65-HD'
+      } : null,
+      isApplicantSubmission: true,
+      originalSubmission: sub
+    }));
+
+    // Pre-populate evaluation states for applicant submissions if already evaluated
+    applicantSubmissions.forEach(sub => {
+      if (sub.originalSubmission && !reviewerEvalStates[sub.id]) {
+        reviewerEvalStates[sub.id] = {
+          checking: false,
+          result: {
+            decision_id: sub.originalSubmission.decision_id,
+            outcome: sub.originalSubmission.outcome,
+            uncertainty_category: sub.originalSubmission.uncertainty_category,
+            policy_basis: sub.originalSubmission.policy_basis,
+            escalation_question: sub.originalSubmission.escalation_question,
+            cryptographic_receipt: sub.originalSubmission.cryptographic_receipt,
+            evaluated_at: sub.originalSubmission.submitted_at
+          },
+          payload: {
+            request_id: sub.originalSubmission.request_id,
+            employee_name: sub.applicantName,
+            leave_type: sub.leaveType,
+            days_requested: sub.days
+          },
+          managerAction: sub.originalSubmission.manager_action
+        };
+      }
+    });
+
+    return [...applicantSubmissions, ...CASE_FOLDERS];
+  }
+
+  function renderReviewer() {
+    const allCases = getAllReviewerCases();
+    const countEl = document.getElementById('reviewer-case-count');
+    if (countEl) countEl.textContent = allCases.length;
+    renderReviewerCaseList();
+    renderReviewerDetail();
+  }
+
+  function renderReviewerCaseList() {
+    const container = document.getElementById('reviewer-cases-list');
+    if (!container) return;
+
+    const allCases = getAllReviewerCases();
+    if (!allCases.find(x => x.id === selectedReviewerCaseId) && allCases.length > 0) {
+      selectedReviewerCaseId = allCases[0].id;
+    }
+
+    container.innerHTML = allCases.map(c => {
+      const isSelected = c.id === selectedReviewerCaseId;
+      const st = reviewerEvalStates[c.id];
+      const isChecking = st?.checking;
+      const res = st?.result;
+      const act = st?.managerAction;
+
+      let badgeHtml = '<span class="status-chip chip-pending">Chưa Check</span>';
+      if (isChecking) {
+        badgeHtml = '<span class="status-chip chip-pending" style="background:#e0e7ff;color:#3730a3">⚡ Đang quét...</span>';
+      } else if (act) {
+        if (act.resolution === 'APPROVE') {
+          badgeHtml = '<span class="status-chip" style="background:#d1fae5;color:#065f46">✓ Đã Phê Duyệt</span>';
+        } else if (act.resolution === 'SWITCH_LEAVE_TYPE') {
+          badgeHtml = '<span class="status-chip" style="background:#e0e7ff;color:#3730a3">🔄 Đổi Không Lương</span>';
+        } else {
+          badgeHtml = '<span class="status-chip" style="background:#fee2e2;color:#991b1b">✕ Đã Từ Chối</span>';
+        }
+      } else if (res) {
+        if (res.outcome === 'AUTO_APPROVE') {
+          badgeHtml = '<span class="status-chip chip-approved">✓ Hợp Lệ</span>';
+        } else if (res.outcome === 'ESCALATE') {
+          badgeHtml = '<span class="status-chip chip-escalated">⚠️ Escalate</span>';
+        } else {
+          badgeHtml = '<span class="status-chip chip-rejected">✕ Từ Chối</span>';
+        }
+      }
+
+      const sourceTag = c.isApplicantSubmission 
+        ? '<span style="font-size:10px; background:#eff6ff; color:#2563eb; padding:1px 5px; border-radius:4px; font-weight:700">Mới nộp</span>' 
+        : '';
+
+      return `
+        <div class="case-item ${isSelected ? 'selected' : ''}" onclick="selectReviewerCase('${c.id}')">
+          <div class="case-item-header">
+            <span style="font-family:monospace; font-size:11.5px; font-weight:700; color:#2563eb">📁 ${c.folderName} ${sourceTag}</span>
+            ${badgeHtml}
+          </div>
+          <div style="font-weight:700; font-size:13px; color:var(--text)">${escHtml(c.applicantName)}</div>
+          <div style="font-size:11.5px; color:var(--muted); margin-top:2px">
+            ${c.applicantId} · ${escHtml(c.leaveTypeLabel)} (${c.durationLabel})
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid #f1f5f9">
+            <span style="font-size:11px; color:var(--muted)">
+              📄 1 PDF ${c.evidenceFile ? '· 🩺 1 Ảnh C65-HD' : ''}
+            </span>
+            <button type="button" class="btn btn-outline" style="padding:3px 8px; font-size:11px; font-weight:700" onclick="event.stopPropagation(); selectReviewerCase('${c.id}'); runReviewerCheck('${c.id}')" ${isChecking ? 'disabled' : ''}>
+              ${isChecking ? 'Checking...' : '⚡ Rejudge'}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectReviewerCase(id) {
+    selectedReviewerCaseId = id;
+    renderReviewerCaseList();
+    renderReviewerDetail();
+  }
+
+  function renderReviewerDetail() {
+    const container = document.getElementById('reviewer-case-detail');
+    if (!container) return;
+
+    const allCases = getAllReviewerCases();
+    const c = allCases.find(x => x.id === selectedReviewerCaseId) || allCases[0];
+    if (!c) {
+      container.innerHTML = '<div style="padding:40px; text-align:center; color:var(--muted)">Không có hồ sơ nào.</div>';
+      return;
+    }
+
+    const st = reviewerEvalStates[c.id];
+    const isChecking = st?.checking;
+    const res = st?.result;
+    const act = st?.managerAction;
+
+    let vlmInspectionHtml = '';
+    if (c.evidenceFile) {
+      if (res) {
+        const isU1 = res.outcome === 'ESCALATE' && res.uncertainty_category === 'U1_DATA';
+        vlmInspectionHtml = `
+          <div style="margin-top:10px; padding:10px; background:white; border:1px solid #cbd5e1; border-radius:8px; font-size:11.5px">
+            <div style="font-weight:700; color:#4f46e5; text-transform:uppercase; font-size:10.5px; margin-bottom:6px">
+              🔍 Kết Quả Phân Tích Thị Giác (Gemma 4 26B VLM):
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
+              <div style="padding:4px 8px; border-radius:6px; background:${isU1 ? '#fee2e2;color:#991b1b' : '#ecfdf5;color:#065f46'}; font-weight:700">
+                Mộc đỏ: ${isU1 ? '✕ Không phát hiện' : '✓ CÓ MỘC ĐỎ'}
+              </div>
+              <div style="padding:4px 8px; border-radius:6px; background:${isU1 ? '#fee2e2;color:#991b1b' : '#ecfdf5;color:#065f46'}; font-weight:700">
+                Chữ ký bác sĩ: ${isU1 ? '✕ Không phát hiện' : '✓ CÓ CHỮ KÝ'}
+              </div>
+            </div>
+            <div style="margin-top:8px; color:#475569; line-height:1.4">
+              Chứng từ y tế đối soát theo Thông tư 56/2017/TT-BYT &amp; Quyết định 166/QĐ-BHXH.
+            </div>
+          </div>
+        `;
+      } else {
+        vlmInspectionHtml = `
+          <div style="margin-top:10px; padding:8px 12px; background:white; border:1px solid #cbd5e1; border-radius:8px; font-size:11.5px; color:var(--muted); text-align:center">
+            Bấm <strong>Thẩm Định Lại (Rejudge)</strong> để mô hình Gemma 4 quét OCR và thẩm định mộc đỏ + chữ ký.
+          </div>
+        `;
+      }
+    }
+
+    let decisionCardHtml = '';
+    if (res) {
+      const isApproved = res.outcome === 'AUTO_APPROVE';
+      const isEscalated = res.outcome === 'ESCALATE';
+      const cardBg = isApproved ? '#f0fdf4' : isEscalated ? '#fffbeb' : '#fef2f2';
+      const cardBorder = isApproved ? '#bbf7d0' : isEscalated ? '#fde68a' : '#fecaca';
+
+      decisionCardHtml = `
+        <div style="margin-top:18px; padding:16px; background:${cardBg}; border:1px solid ${cardBorder}; border-radius:12px">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px">
+            <div style="display:flex; align-items:center; gap:8px">
+              <span class="status-chip ${isApproved ? 'chip-approved' : isEscalated ? 'chip-escalated' : 'chip-rejected'}" style="font-size:12px; font-weight:700; padding:4px 10px">
+                ${isApproved ? '✓ ĐỦ ĐIỀU KIỆN TỰ ĐỘNG DUYỆT' : isEscalated ? '⚠️ KÍCH HOẠT ĐIỂM DỪNG (ESCALATE)' : '✕ TỪ CHỐI THEO QUY CHẾ'}
+              </span>
+              <span style="font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:6px; background:white; border:1px solid #cbd5e1; color:#334155">
+                Bất định: ${res.uncertainty_category}
+              </span>
+            </div>
+            <span style="font-family:monospace; font-size:11px; color:var(--muted)">
+              ID: ${short(res.decision_id, 18)}
+            </span>
+          </div>
+
+          <div style="font-size:12.5px; color:#1e293b; line-height:1.5; margin-bottom:8px">
+            <strong>Căn cứ đối chiếu quy chế:</strong> ${escHtml(res.policy_basis)}
+          </div>
+
+          <div style="font-size:11px; color:var(--muted); font-family:monospace; margin-bottom:10px; word-break:break-all">
+            <strong>Biên bản SHA-256:</strong> ${res.cryptographic_receipt}
+          </div>
+
+          ${res.escalation_question ? `
+            <div style="background:white; border:1px solid #f59e0b; border-radius:8px; padding:12px; margin-bottom:12px">
+              <div style="font-size:11px; font-weight:800; color:#b45309; text-transform:uppercase; margin-bottom:4px">
+                Câu hỏi phân xử đơn lượt (Single-turn HITL):
+              </div>
+              <div style="font-size:13px; font-weight:600; color:#78350f">
+                👉 ${escHtml(res.escalation_question)}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Manager Single-Turn Actions -->
+          <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; padding-top:10px; border-top:1px solid rgba(0,0,0,.06); flex-wrap:wrap">
+            ${act ? `
+              <div style="display:flex; align-items:center; gap:8px; background:white; border:1px solid #10b981; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:700; color:#065f46">
+                <span>✓ Đã ghi sổ cái: ${act.resolution === 'APPROVE' ? 'KÝ DUYỆT PHÊ CHUẨN' : act.resolution === 'SWITCH_LEAVE_TYPE' ? 'ĐÃ ĐỔI NGHỈ KHÔNG LƯƠNG' : 'TỪ CHỐI ĐƠN'}</span>
+                <span style="font-family:monospace; font-size:10px; color:#6b7280">(${short(act.receipt, 16)})</span>
+              </div>
+            ` : `
+              <button type="button" class="btn btn-outline" style="border-color:#ef4444; color:#b91c1c; font-size:12px; font-weight:700" onclick="handleReviewerOverride('${c.id}', 'REJECT')">
+                ✕ Từ Chối Đơn
+              </button>
+              <button type="button" class="btn btn-outline" style="border-color:#6366f1; color:#4338ca; font-size:12px; font-weight:700" onclick="handleReviewerOverride('${c.id}', 'SWITCH_LEAVE_TYPE', 'UNPAID')">
+                🔄 Đổi Nghỉ Không Lương
+              </button>
+              <button type="button" class="btn btn-primary" style="background:#059669; font-size:12px; font-weight:700" onclick="handleReviewerOverride('${c.id}', 'APPROVE')">
+                ✍️ Ký Duyệt Phê Chuẩn
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+    } else {
+      decisionCardHtml = `
+        <div style="margin-top:18px; padding:24px; background:#f8fafc; border:1px solid var(--border); border-radius:12px; text-align:center; color:var(--muted); font-size:13px">
+          Chưa chạy thẩm định. Bấm nút <strong>"⚡ Thẩm Định Lại (Rejudge)"</strong> ở trên để AI đối soát tự động.
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:14px; margin-bottom:16px; flex-wrap:wrap; gap:10px">
+        <div>
+          <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">
+            Hồ sơ đang kiểm tra:
+          </span>
+          <h3 style="font-size:16px; font-weight:800; color:var(--text); margin-top:2px">
+            ${escHtml(c.applicantName)} (${c.applicantId}) — ${escHtml(c.department)}
+          </h3>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px">
+          <button type="button" class="btn btn-outline" style="font-size:12px; padding:6px 12px" onclick="loadEvalPreset('${c.id}')" title="Chuyển dữ liệu này sang trang Nộp Đơn để thử lại">
+            📋 Nạp vào Form
+          </button>
+          <button type="button" class="btn btn-primary" style="font-size:12px; padding:6px 14px; font-weight:700" onclick="runReviewerCheck('${c.id}')" ${isChecking ? 'disabled' : ''}>
+            ${isChecking ? '<span class="spinner" style="width:12px;height:12px"></span> Đang Thẩm Định...' : '⚡ Thẩm Định Lại (Rejudge)'}
+          </button>
+        </div>
+      </div>
+
+      <!-- Side-by-side Inspection Cards -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px">
+        <!-- PDF Document -->
+        <div class="doc-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+            <span style="font-weight:700; font-size:12.5px; color:#1e293b; display:flex; align-items:center; gap:6px">
+              <span>📄</span> File Đơn Xin Nghỉ (PDF)
+            </span>
+            ${c.pdfFile ? `
+              <a href="${c.pdfFile.filePath}" target="_blank" rel="noreferrer" style="font-size:11.5px; color:#2563eb; font-weight:700; text-decoration:none">
+                Mở PDF Gốc ↗
+              </a>
+            ` : ''}
+          </div>
+          <table class="doc-meta-table">
+            <tr><td>Mã văn bản:</td><td>${c.pdfFile ? c.pdfFile.docCode : c.id}</td></tr>
+            <tr><td>Loại nghỉ:</td><td>${escHtml(c.leaveTypeLabel)}</td></tr>
+            <tr><td>Thời gian:</td><td>${c.fromDate} → ${c.toDate} (${c.durationLabel})</td></tr>
+            <tr><td>Lý do:</td><td>${escHtml(c.reason)}</td></tr>
+            <tr><td>Ghi chú:</td><td>${escHtml(c.notes)}</td></tr>
+          </table>
+        </div>
+
+        <!-- Evidence Attachment -->
+        <div class="doc-box" style="background:#f0f9ff; border-color:#bae6fd">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+            <span style="font-weight:700; font-size:12.5px; color:#0369a1; display:flex; align-items:center; gap:6px">
+              <span>🩺</span> Bằng Chứng Y Tế / C65-HD
+            </span>
+            ${c.evidenceFile ? `
+              <a href="${c.evidenceFile.filePath}" target="_blank" rel="noreferrer" style="font-size:11.5px; color:#0284c7; font-weight:700; text-decoration:none">
+                Mở Ảnh Gốc ↗
+              </a>
+            ` : ''}
+          </div>
+
+          ${c.evidenceFile ? `
+            <div style="background:white; border:1px solid #bae6fd; border-radius:8px; padding:8px; text-align:center">
+              <img src="${c.evidenceFile.filePath}" alt="Chứng từ y tế" style="max-height:120px; object-fit:contain; border-radius:4px; margin:0 auto; display:block" />
+            </div>
+            ${vlmInspectionHtml}
+          ` : `
+            <div style="background:white; border:1px solid #fed7aa; border-radius:8px; padding:20px 14px; text-align:center">
+              <span style="font-size:24px; display:block; margin-bottom:6px">⚠️</span>
+              <div style="font-weight:700; font-size:12.5px; color:#9a3412">Hồ sơ này không có chứng từ y tế đi kèm</div>
+              <div style="font-size:11.5px; color:#64748b; margin-top:4px">
+                Điều 14.2 quy định nghỉ ốm từ 2 ngày bắt buộc phải có Giấy chứng nhận C65-HD có mộc đỏ hợp lệ.
+              </div>
+            </div>
+          `}
+        </div>
+      </div>
+
+      <!-- AI Referee Decision Card -->
+      ${decisionCardHtml}
+    `;
+  }
+
+  async function runReviewerCheck(caseId) {
+    const allCases = getAllReviewerCases();
+    const c = allCases.find(x => x.id === caseId);
+    if (!c) return;
+
+    reviewerEvalStates[c.id] = Object.assign({}, reviewerEvalStates[c.id], { checking: true });
+    renderReviewerCaseList();
+    if (selectedReviewerCaseId === c.id) renderReviewerDetail();
+
+    try {
+      const docs = [];
+      if (c.evidenceFile && c.evidenceFile.filePath) {
+        let dataUrl = c.evidenceFile.filePath;
+        if (!dataUrl.startsWith('data:')) {
+          const resp = await fetch(c.evidenceFile.filePath);
+          const blob = await resp.blob();
+          dataUrl = await new Promise((res) => {
+            const reader = new FileReader();
+            reader.onload = () => res(reader.result);
+            reader.readAsDataURL(blob);
+          });
+        }
+        docs.push({
+          document_id: crypto.randomUUID(),
+          form_type: c.evidenceFile.formType || 'C65-HD',
+          content_ref: dataUrl,
+          mime_type: 'image/jpeg'
+        });
+      }
+
+      const payload = {
+        request_id: crypto.randomUUID(),
+        employee_id: EMPLOYEE_ID,
+        employee_name: c.applicantName,
+        employment_status: c.employmentStatus,
+        leave_type: c.leaveType,
+        start_date: c.fromDate,
+        end_date: c.toDate,
+        days_requested: c.days,
+        leave_balance: {
+          annual_days_remaining: c.annualRemaining,
+          sick_days_remaining: c.sickRemaining,
+          maternity_weeks_remaining: c.maternityRemaining,
+          unpaid_days_used_ytd: c.unpaidUsed
+        },
+        attached_documents: docs,
+        submitted_at: new Date().toISOString()
+      };
+
+      const result = await callEvaluate(payload);
+      reviewerEvalStates[c.id] = {
+        checking: false,
+        result: result,
+        payload: payload,
+        managerAction: null
+      };
+
+      // Also record to local history
+      addHistory({
+        id: result.decision_id,
+        decision_id: result.decision_id,
+        request_id: payload.request_id,
+        timestamp: result.evaluated_at || new Date().toISOString(),
+        time: result.evaluated_at || new Date().toISOString(),
+        name: c.applicantName,
+        employee_name: c.applicantName,
+        type: c.leaveType,
+        leave_type: c.leaveType,
+        days: c.days,
+        outcome: result.outcome,
+        uncertainty: result.uncertainty_category,
+        uncertainty_category: result.uncertainty_category,
+        policy: result.policy_basis,
+        policy_basis: result.policy_basis,
+        question: result.escalation_question,
+        escalation_question: result.escalation_question,
+        receipt: result.cryptographic_receipt,
+        cryptographic_receipt: result.cryptographic_receipt,
+        evaluated_at: result.evaluated_at,
+        manager_action: null
+      });
+
+    } catch (err) {
+      console.error(err);
+      reviewerEvalStates[c.id] = { checking: false, error: err.message };
+    }
+
+    renderReviewerCaseList();
+    if (selectedReviewerCaseId === c.id) renderReviewerDetail();
+  }
+
+  async function runReviewerCheckAll() {
+    const btn = document.getElementById('btn-reviewer-check-all');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Đang Quét Toàn Bộ...';
+    }
+
+    const allCases = getAllReviewerCases();
+    for (const c of allCases) {
+      selectReviewerCase(c.id);
+      await runReviewerCheck(c.id);
+    }
+
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>⚡⚡</span> Chạy Toàn Bộ (Agent Check All)';
+    }
+  }
+
+  async function handleReviewerOverride(caseId, resolution, newLeaveType = 'UNPAID') {
+    const allCases = getAllReviewerCases();
+    const c = allCases.find(x => x.id === caseId);
+    let st = reviewerEvalStates[caseId];
+
+    if (!st || !st.result) {
+      await runReviewerCheck(caseId);
+      st = reviewerEvalStates[caseId];
+      if (!st || !st.result) {
+        alert('Vui lòng đợi thẩm định hoàn tất trước khi ra quyết định.');
+        return;
+      }
+    }
+
+    try {
+      const payloadBody = {
+        decision_id: st.result.decision_id,
+        request_id: st.payload.request_id,
+        reviewer_id: EMPLOYEE_ID,
+        resolution: resolution,
+        reviewer_notes: resolution === 'APPROVE'
+          ? 'Ký duyệt phê chuẩn đặc cách bởi Cấp trên.'
+          : resolution === 'SWITCH_LEAVE_TYPE'
+          ? 'Chuyển sang hình thức nghỉ không lương (UNPAID) theo chính sách.'
+          : 'Từ chối yêu cầu do không đáp ứng quy chuẩn.',
+        override_at: new Date().toISOString()
+      };
+
+      if (resolution === 'SWITCH_LEAVE_TYPE') {
+        payloadBody.new_leave_type = newLeaveType;
+      }
+
+      const resp = await fetch(`${API_BASE}/api/v1/override`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloadBody)
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data?.error || data?.message || 'Override request failed');
+
+      st.managerAction = {
+        resolution: resolution,
+        receipt: data.cryptographic_receipt,
+        at: data.recorded_at,
+        new_leave_type: newLeaveType
+      };
+
+      // Sync with applicant's submissions in localStorage
+      const myReqs = loadMyRequests();
+      const targetReq = myReqs.find(x => x.id === caseId || x.decision_id === st.result.decision_id);
+      if (targetReq) {
+        targetReq.manager_action = st.managerAction;
+        saveMyRequests(myReqs);
+        renderMyRequests();
+      }
+
+      // Sync with history ledger
+      const histItems = loadHistory();
+      const existingHist = histItems.find(h => (h.decision_id || h.id) === data.decision_id || (st.payload && (h.request_id || h.id) === st.payload.request_id));
+      if (existingHist) {
+        existingHist.manager_action = st.managerAction;
+        saveHistory(histItems);
+        if (typeof renderHistory === 'function') renderHistory();
+      } else {
+        addHistory({
+          id: data.decision_id,
+          decision_id: data.decision_id,
+          request_id: st.payload.request_id,
+          timestamp: data.recorded_at,
+          time: data.recorded_at,
+          name: c ? c.applicantName : 'Nhân Viên',
+          employee_name: c ? c.applicantName : 'Nhân Viên',
+          type: resolution === 'SWITCH_LEAVE_TYPE' ? newLeaveType : (c ? c.leaveType : 'LEAVE'),
+          leave_type: resolution === 'SWITCH_LEAVE_TYPE' ? newLeaveType : (c ? c.leaveType : 'LEAVE'),
+          days: c ? c.days : 1,
+          outcome: resolution === 'APPROVE' ? 'AUTO_APPROVE' : resolution === 'SWITCH_LEAVE_TYPE' ? 'AUTO_APPROVE' : 'REJECT',
+          uncertainty: 'NONE',
+          uncertainty_category: 'NONE',
+          policy: `Quyết định can thiệp bởi HR Admin: ${resolution}. Mã biên lai: ${data.cryptographic_receipt}`,
+          policy_basis: `Quyết định can thiệp bởi HR Admin: ${resolution}. Mã biên lai: ${data.cryptographic_receipt}`,
+          receipt: data.cryptographic_receipt,
+          cryptographic_receipt: data.cryptographic_receipt,
+          manager_action: st.managerAction
+        });
+      }
+
+      renderReviewerDetail();
+      renderReviewerCaseList();
+    } catch (err) {
+      alert('Override error: ' + err.message);
+    }
+  }
+
+  // ── Quick Presets on Evaluate Form ─────────────────────────
+  async function loadEvalPreset(presetKey) {
+    if (presetKey === 'PROBATION') {
+      document.getElementById('f-name').value = 'Trần Văn C';
+      document.getElementById('f-status').value = 'PROBATION';
+      document.getElementById('f-leave-type').value = 'ANNUAL';
+      document.getElementById('f-days').value = '2';
+      const today = new Date();
+      document.getElementById('f-start').value = toISODate(today);
+      const end = new Date(today); end.setDate(end.getDate() + 2);
+      document.getElementById('f-end').value = toISODate(end);
+      document.getElementById('f-annual').value = '0';
+      document.getElementById('f-sick').value = '30';
+      document.getElementById('f-mat').value = '26';
+      document.getElementById('f-unpaid').value = '0';
+      evalAttachedDocs = [];
+      renderEvalThumbs();
+    } else {
+      const c = CASE_FOLDERS.find(x => x.id === presetKey);
+      if (c) {
+        document.getElementById('f-name').value = c.applicantName;
+        document.getElementById('f-status').value = c.employmentStatus;
+        document.getElementById('f-leave-type').value = c.leaveType;
+        document.getElementById('f-days').value = c.days;
+        document.getElementById('f-start').value = c.fromDate;
+        document.getElementById('f-end').value = c.toDate;
+        document.getElementById('f-annual').value = c.annualRemaining;
+        document.getElementById('f-sick').value = c.sickRemaining;
+        document.getElementById('f-mat').value = c.maternityRemaining;
+        document.getElementById('f-unpaid').value = c.unpaidUsed;
+
+        evalAttachedDocs = [];
+        if (c.evidenceFile) {
+          try {
+            const resp = await fetch(c.evidenceFile.filePath);
+            const blob = await resp.blob();
+            const dataUrl = await new Promise((res) => {
+              const reader = new FileReader();
+              reader.onload = () => res(reader.result);
+              reader.readAsDataURL(blob);
+            });
+            evalAttachedDocs.push({
+              document_id: crypto.randomUUID(),
+              form_type: c.evidenceFile.formType || 'C65-HD',
+              content_ref: dataUrl,
+              mime_type: 'image/jpeg',
+              name: c.evidenceFile.fileName,
+              size: blob.size,
+            });
+          } catch (e) {
+            console.warn('Could not prefetch image:', e);
+          }
+        }
+        renderEvalThumbs();
+      }
+    }
+
+    navigate('evaluate');
+    const formEl = document.getElementById('eval-form');
+    if (formEl) formEl.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ── Modals (Policy & Standard Form) ─────────────────────────
+  function openPolicyModal() {
+    const el = document.getElementById('modal-policy');
+    if (el) el.classList.add('open');
+  }
+  function closePolicyModal() {
+    const el = document.getElementById('modal-policy');
+    if (el) el.classList.remove('open');
+  }
+  function openStandardFormModal() {
+    const el = document.getElementById('modal-standard-form');
+    if (el) el.classList.add('open');
+  }
+  function closeStandardFormModal() {
+    const el = document.getElementById('modal-standard-form');
+    if (el) el.classList.remove('open');
+  }
+  function copyStandardForm() {
+    const text = `CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập – Tự do – Hạnh phúc\n------------------------------------------------\nĐƠN XIN NGHỈ PHÉP (Mã BM-HR-01)\nKính gửi: Ban Giám Đốc, Trưởng phòng bộ phận, Phòng Nhân sự.\n1. Thông tin nhân viên:\n- Họ và tên: Nguyễn Thị Hương | MSNV: NV-2024-0312\n- Phòng ban: Phòng Kinh doanh\n2. Nội dung xin nghỉ:\n- Loại nghỉ: Nghỉ phép năm hưởng lương (ANNUAL)\n- Thời gian: 15/10/2025 - 15/10/2025 (1 ngày)\n- Lý do: Việc cá nhân gia đình theo kế hoạch\n3. Bàn giao: Trần Văn An (NV-2023-0105)`;
+    navigator.clipboard.writeText(text).then(() => {
+      alert('✓ Đã sao chép nội dung Biểu mẫu chuẩn BM-HR-01 vào bộ nhớ tạm.');
+    });
+  }
+  function printStandardForm() {
+    window.print();
+  }
+  function applyStandardFormToEval() {
+    closeStandardFormModal();
+    loadEvalPreset('CASE-04');
+  }
+
 
   // ── HTML escape ─────────────────────────────────────────────
   function escHtml(str) {
@@ -1106,18 +2541,104 @@
   }
   checkBackendStatus();
 
-  // ── Supporting Documents for Evaluation Form ────────────────
+  // ── 1. Form PDF Document Upload Handlers ───────────────────
+  let evalPdfFile = null; // { name, size, dataUrl, filePath }
+
+  function evalPdfDragOver(e) {
+    e.preventDefault();
+    const dz = document.getElementById('eval-pdf-drop-zone');
+    if (dz) dz.classList.add('dragover');
+  }
+  function evalPdfDragLeave() {
+    const dz = document.getElementById('eval-pdf-drop-zone');
+    if (dz) dz.classList.remove('dragover');
+  }
+  function evalPdfDrop(e) {
+    e.preventDefault();
+    evalPdfDragLeave();
+    const file = e.dataTransfer.files[0];
+    if (file) handlePdfFile(file);
+  }
+  function evalPdfFileSelected(e) {
+    const file = e.target.files[0];
+    if (file) handlePdfFile(file);
+    e.target.value = '';
+  }
+  function handlePdfFile(file) {
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      alert('Vui lòng chọn tệp định dạng PDF (.pdf)');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      evalPdfFile = {
+        name: file.name,
+        size: file.size,
+        dataUrl: evt.target.result,
+        filePath: evt.target.result
+      };
+      renderPdfPreview();
+    };
+    reader.readAsDataURL(file);
+  }
+  function renderPdfPreview() {
+    const container = document.getElementById('eval-pdf-preview');
+    if (!container) return;
+    if (!evalPdfFile) {
+      container.style.display = 'none';
+      container.innerHTML = '';
+      return;
+    }
+    container.style.display = 'block';
+    const sizeKb = (evalPdfFile.size / 1024).toFixed(1) + ' KB';
+    container.innerHTML = `
+      <div class="file-chip" style="display:flex; justify-content:space-between; align-items:center; width:100%; box-sizing:border-box">
+        <div style="display:flex; align-items:center; gap:8px; overflow:hidden">
+          <span style="font-size:18px">📄</span>
+          <div style="overflow:hidden">
+            <div style="font-size:12px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escHtml(evalPdfFile.name)}</div>
+            <div style="font-size:11px; color:var(--muted)">${sizeKb} · PDF Đơn Nghỉ</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px">
+          ${evalPdfFile.filePath ? `<a href="${evalPdfFile.filePath}" target="_blank" style="font-size:11.5px; color:#2563eb; font-weight:700; text-decoration:none">Xem ↗</a>` : ''}
+          <button type="button" onclick="removePdfFile()" style="background:none; border:none; color:var(--muted); cursor:pointer; padding:2px">✕</button>
+        </div>
+      </div>
+    `;
+  }
+  function removePdfFile() {
+    evalPdfFile = null;
+    renderPdfPreview();
+  }
+  async function loadSampleFormPdf() {
+    try {
+      const resp = await fetch('/documents/don_phep_nam_nguyen_thi_huong.pdf');
+      const blob = await resp.blob();
+      evalPdfFile = {
+        name: 'don_phep_nam_nguyen_thi_huong.pdf',
+        size: blob.size,
+        filePath: '/documents/don_phep_nam_nguyen_thi_huong.pdf',
+        dataUrl: '/documents/don_phep_nam_nguyen_thi_huong.pdf'
+      };
+      renderPdfPreview();
+    } catch (err) {
+      alert('Không thể tải tệp PDF mẫu: ' + err.message);
+    }
+  }
+
+  // ── 2. Supporting Proof Upload Handlers ───────────────────────
   let evalAttachedDocs = []; // Array of { document_id, form_type, content_ref, mime_type, name, size }
 
   function evalDocDragOver(e) {
     e.preventDefault();
-    const dz = document.getElementById('eval-drop-zone');
-    if (dz) { dz.style.borderColor = 'var(--accent)'; dz.style.background = '#eff6ff'; }
+    const dz = document.getElementById('eval-doc-drop-zone');
+    if (dz) dz.classList.add('dragover');
   }
 
   function evalDocDragLeave() {
-    const dz = document.getElementById('eval-drop-zone');
-    if (dz) { dz.style.borderColor = 'var(--border)'; dz.style.background = '#f8fafc'; }
+    const dz = document.getElementById('eval-doc-drop-zone');
+    if (dz) dz.classList.remove('dragover');
   }
 
   function evalDocDrop(e) {
@@ -1134,23 +2655,24 @@
   }
 
   function handleEvalFiles(files) {
-    const validMimes = ['image/jpeg', 'image/png', 'image/webp'];
+    const validMimes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
     files.forEach(file => {
-      if (!validMimes.includes(file.type)) {
-        alert(`File "${file.name}" is not supported. Please upload JPEG, PNG, or WEBP.`);
+      if (!validMimes.includes(file.type) && !file.name.toLowerCase().endsWith('.pdf')) {
+        alert(`File "${file.name}" không hợp lệ. Vui lòng tải file JPEG, PNG, WEBP hoặc PDF.`);
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        alert(`File "${file.name}" exceeds 10MB limit.`);
+        alert(`File "${file.name}" vượt quá dung lượng tối đa 10MB.`);
         return;
       }
       const reader = new FileReader();
       reader.onload = (evt) => {
+        const isMedical = file.name.toLowerCase().includes('c65') || document.getElementById('f-leave-type').value === 'SICK';
         evalAttachedDocs.push({
           document_id: crypto.randomUUID(),
-          form_type: 'C65-HD',
+          form_type: isMedical ? 'C65-HD' : 'MINH CHỨNG',
           content_ref: evt.target.result,
-          mime_type: file.type,
+          mime_type: file.type || 'image/jpeg',
           name: file.name,
           size: file.size,
         });
@@ -1180,17 +2702,151 @@
 
     container.style.display = 'flex';
     notice.style.display = 'flex';
-    noticeText.textContent = `${evalAttachedDocs.length} document${evalAttachedDocs.length > 1 ? 's' : ''} attached — VLM OCR (Gemma 4 26B A4B) will analyze stamps & signatures during evaluation.`;
+    noticeText.textContent = `${evalAttachedDocs.length} tài liệu minh chứng đã đính kèm — Hệ thống AER sẽ kiểm tra mộc đỏ và chữ ký tự động qua Gemma 4 26B A4B VLM.`;
 
     container.innerHTML = evalAttachedDocs.map((doc, idx) => `
       <div style="position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 10px;background:white;border:1px solid var(--border);border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
-        <img src="${doc.content_ref}" alt="" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid #cbd5e1" />
+        ${doc.mime_type === 'application/pdf' ? '<span style="font-size:18px">📄</span>' : `<img src="${doc.content_ref}" alt="" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid #cbd5e1" />`}
         <span style="font-size:12px;font-weight:500;color:var(--text);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(doc.name)}</span>
         <button type="button" onclick="evalDocRemove(${idx})" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px;display:flex;align-items:center" title="Remove">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
     `).join('');
+  }
+
+  async function loadSampleProofImage() {
+    try {
+      const resp = await fetch('/cases/case_01_le_thi_phuong/bang_chung_le_thi_phuong.jpg');
+      const blob = await resp.blob();
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        evalAttachedDocs.push({
+          document_id: crypto.randomUUID(),
+          form_type: 'C65-HD',
+          content_ref: e.target.result,
+          mime_type: 'image/jpeg',
+          name: 'bang_chung_c65_hd_le_thi_phuong.jpg',
+          size: blob.size
+        });
+        renderEvalThumbs();
+      };
+      reader.readAsDataURL(blob);
+    } catch (err) {
+      alert('Không thể nạp chứng từ mẫu: ' + err.message);
+    }
+  }
+
+  // ── 3. My Submissions Manager (Đơn Của Tôi) ───────────────────
+  const MY_REQUESTS_KEY = 'aer_my_submissions_v1';
+
+  function loadMyRequests() {
+    try { return JSON.parse(localStorage.getItem(MY_REQUESTS_KEY) || '[]'); }
+    catch { return []; }
+  }
+  function saveMyRequests(items) {
+    localStorage.setItem(MY_REQUESTS_KEY, JSON.stringify(items));
+    updateMyRequestsCount();
+  }
+  function addMyRequest(entry) {
+    const items = loadMyRequests();
+    items.unshift(entry);
+    saveMyRequests(items);
+    renderMyRequests();
+  }
+  function updateMyRequestsCount() {
+    const el = document.getElementById('my-requests-count');
+    if (!el) return;
+    const items = loadMyRequests();
+    el.textContent = items.length > 0 ? items.length : '';
+  }
+
+  function renderMyRequests() {
+    const items = loadMyRequests();
+    const cont = document.getElementById('my-requests-content');
+    if (!cont) return;
+
+    // Stat counts
+    const totalEl = document.getElementById('my-stat-total');
+    const appEl   = document.getElementById('my-stat-approved');
+    const escEl   = document.getElementById('my-stat-escalated');
+    const rejEl   = document.getElementById('my-stat-rejected');
+
+    if (totalEl) totalEl.textContent = items.length;
+    if (appEl) appEl.textContent = items.filter(x => x.outcome === 'AUTO_APPROVE' || x.manager_action?.resolution === 'APPROVE' || x.manager_action?.resolution === 'SWITCH_LEAVE_TYPE').length;
+    if (escEl) escEl.textContent = items.filter(x => x.outcome === 'ESCALATE' && !x.manager_action).length;
+    if (rejEl) rejEl.textContent = items.filter(x => x.outcome === 'REJECT' || x.manager_action?.resolution === 'REJECT').length;
+
+    if (items.length === 0) {
+      cont.innerHTML = `
+        <div class="empty-state" style="padding:50px 20px">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <p>Bạn chưa gửi đơn xin nghỉ nào. Bấm nút <strong>"Nộp Đơn Nghỉ Mới"</strong> để gửi đơn đầu tiên.</p>
+        </div>`;
+      return;
+    }
+
+    const rows = items.map(item => {
+      let statusBadge = '';
+      if (item.manager_action) {
+        if (item.manager_action.resolution === 'APPROVE') {
+          statusBadge = '<span class="status-chip chip-approved" style="font-weight:700">✓ HR Đã Phê Duyệt Đặc Cách</span>';
+        } else if (item.manager_action.resolution === 'SWITCH_LEAVE_TYPE') {
+          statusBadge = '<span class="status-chip" style="background:#e0e7ff;color:#3730a3;font-weight:700">🔄 Đã Đổi Nghỉ Không Lương</span>';
+        } else {
+          statusBadge = '<span class="status-chip chip-rejected" style="font-weight:700">✕ HR Đã Từ Chối</span>';
+        }
+      } else if (item.outcome === 'AUTO_APPROVE') {
+        statusBadge = '<span class="status-chip chip-approved" style="font-weight:700">✓ Tự Động Phê Duyệt (&lt;10ms)</span>';
+      } else if (item.outcome === 'ESCALATE') {
+        statusBadge = '<span class="status-chip chip-escalated" style="font-weight:700">⚠️ Đang Chờ HR Phân Xử (HITL)</span>';
+      } else {
+        statusBadge = '<span class="status-chip chip-rejected" style="font-weight:700">✕ Từ Chối Theo Quy Chế</span>';
+      }
+
+      const pdfLink = item.pdf_file ? `
+        <a href="${item.pdf_file.filePath || item.pdf_file.dataUrl}" target="_blank" style="font-size:11.5px; color:#2563eb; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px">
+          <span>📄</span> ${escHtml(short(item.pdf_file.fileName || item.pdf_file.name || 'don.pdf', 16))}
+        </a>
+      ` : '<span style="color:var(--muted)">—</span>';
+
+      const proofThumb = (item.proof_files && item.proof_files.length > 0) ? `
+        <span style="font-size:11.5px; color:#0284c7; font-weight:600">🩺 ${item.proof_files.length} tệp</span>
+      ` : '<span style="color:var(--muted)">Không có</span>';
+
+      return `
+        <tr>
+          <td style="font-family:monospace; font-size:11.5px; font-weight:700; color:#2563eb">${escHtml(item.id)}</td>
+          <td class="muted" style="font-size:12px">${formatTime(item.submitted_at)}</td>
+          <td><span class="chip blue">${escHtml(item.leave_type)}</span> (${item.days} ngày)</td>
+          <td>${pdfLink}</td>
+          <td>${proofThumb}</td>
+          <td>${statusBadge}</td>
+          <td class="muted mono" style="font-size:11px" title="${item.cryptographic_receipt}">${short(item.cryptographic_receipt, 12)}…</td>
+        </tr>
+      `;
+    }).join('');
+
+    cont.innerHTML = `
+      <div class="table-wrapper" style="border:none;border-radius:0">
+        <table>
+          <thead>
+            <tr>
+              <th>Mã Đơn</th>
+              <th>Thời Gian</th>
+              <th>Loại Nghỉ</th>
+              <th>File Đơn (PDF)</th>
+              <th>Minh Chứng</th>
+              <th>Trạng Thái AER</th>
+              <th>Biên Lai SHA-256</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
   }
 
   // ── Build API payload ────────────────────────────────────────
@@ -1294,34 +2950,106 @@
     btn.disabled = true;
     const docCount = evalAttachedDocs.length;
     btn.innerHTML = docCount > 0
-      ? `<span class="spinner"></span> Running VLM OCR (${docCount} doc${docCount > 1 ? 's' : ''})…`
-      : `<span class="spinner"></span> Evaluating…`;
+      ? `<span class="spinner"></span> Đang chạy kiểm tra VLM OCR (${docCount} tệp)…`
+      : `<span class="spinner"></span> Đang Thẩm Định…`;
     area.innerHTML = '';
 
     try {
       const payload = buildPayload();
       const result  = await callEvaluate(payload);
+
+      // Record to audit ledger
       addHistory({
         time:                 result.evaluated_at || new Date().toISOString(),
+        timestamp:            result.evaluated_at || new Date().toISOString(),
         employee_name:        payload.employee_name,
+        name:                 payload.employee_name,
         leave_type:           payload.leave_type,
+        type:                 payload.leave_type,
         days:                 payload.days_requested,
         outcome:              result.outcome,
         decision_id:          result.decision_id,
+        id:                   result.decision_id,
+        request_id:           payload.request_id,
         uncertainty_category: result.uncertainty_category,
+        uncertainty:          result.uncertainty_category,
         policy_basis:         result.policy_basis,
+        policy:               result.policy_basis,
         escalation_question:  result.escalation_question || null,
+        question:             result.escalation_question || null,
         cryptographic_receipt:result.cryptographic_receipt,
+        receipt:              result.cryptographic_receipt,
         evaluated_at:         result.evaluated_at,
         docs_count:           docCount,
+        manager_action:       null,
       });
+
+      // Record to Applicant's Submissions list
+      const activeProf = getActiveProfile();
+      const mySubmission = {
+        id: 'REQ-' + Date.now().toString(36).toUpperCase(),
+        request_id: payload.request_id,
+        applicant_name: payload.employee_name,
+        applicant_id: activeProf.id,
+        department: activeProf.department,
+        employment_status: payload.employment_status,
+        leave_type: payload.leave_type,
+        leave_type_label: payload.leave_type,
+        days: payload.days_requested,
+        duration_label: payload.days_requested + ' ngày làm việc',
+        from_date: payload.start_date,
+        to_date: payload.end_date,
+        pdf_file: evalPdfFile || {
+          fileName: 'don_phep_nam.pdf',
+          filePath: '/documents/don_phep_nam_nguyen_thi_huong.pdf',
+          title: 'Đơn Xin Nghỉ Phép (PDF)'
+        },
+        proof_files: evalAttachedDocs.map(d => ({
+          name: d.name,
+          size: d.size,
+          content_ref: d.content_ref,
+          mime_type: d.mime_type
+        })),
+        submitted_at: new Date().toISOString(),
+        decision_id: result.decision_id,
+        outcome: result.outcome,
+        uncertainty_category: result.uncertainty_category,
+        policy_basis: result.policy_basis,
+        escalation_question: result.escalation_question,
+        cryptographic_receipt: result.cryptographic_receipt,
+        manager_action: null
+      };
+      addMyRequest(mySubmission);
+
+      // Render Result Card
       renderResult(result, area, payload);
+
+      // Render Applicant Confirmation Banner
+      const confCard = document.createElement('div');
+      confCard.className = 'submission-confirm-card';
+      confCard.innerHTML = `
+        <div style="font-size:26px; margin-bottom:8px">🎉</div>
+        <h3 style="font-size:16px; font-weight:800; color:#166534; margin:0 0 6px">
+          Đã Nộp Đơn Thành Công Lên Hệ Thống AER!
+        </h3>
+        <p style="font-size:12.5px; color:#15803d; max-width:620px; margin:0 auto 14px; line-height:1.5">
+          Hồ sơ đã được lưu trữ an toàn với mã yêu cầu <strong>${mySubmission.id}</strong> và biên nhận mật mã SHA-256. 
+          Bạn có thể theo dõi tiến độ phê duyệt của Ban Nhân sự trong mục "Đơn Của Tôi".
+        </p>
+        <div style="display:flex; justify-content:center; gap:10px">
+          <button type="button" class="btn btn-primary" style="background:#16a34a; font-weight:700" onclick="navigate('my-requests')">
+            📂 Chuyển Sang Mục "Đơn Của Tôi" ➔
+          </button>
+        </div>
+      `;
+      area.appendChild(confCard);
+
     } catch (err) {
       renderError(err.message, area);
     } finally {
       btn.disabled = false;
       btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg> Submit Request`;
+              </svg> Gửi Đơn Xin Nghỉ (Submit Request)`;
     }
   }
 
@@ -1329,11 +3057,17 @@
     document.getElementById('eval-form').reset();
     initDates();
     evalAttachedDocs = [];
+    evalPdfFile = null;
     renderEvalThumbs();
+    renderPdfPreview();
     document.getElementById('result-area').innerHTML = '';
   }
 
   // ── History rendering ────────────────────────────────────────
+  function isUuid(str) {
+    return typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+  }
+
   function renderHistory() {
     const items = loadHistory();
     const cont  = document.getElementById('history-content');
@@ -1346,47 +3080,133 @@
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
           </svg>
-          <p>No evaluations yet. Submit a request to see history here.</p>
+          <p>Chưa có giao dịch thẩm định nào. Hãy gửi một đơn nghỉ phép để ghi nhận lịch sử.</p>
         </div>`;
       return;
     }
 
     // Stats
-    const approve  = items.filter(i => i.outcome === 'AUTO_APPROVE').length;
-    const escalate = items.filter(i => i.outcome === 'ESCALATE').length;
-    const reject   = items.filter(i => i.outcome === 'REJECT').length;
-    document.getElementById('stat-total').textContent   = items.length;
+    const totalCount = items.length;
+    const approve = items.filter(i => i.outcome === 'AUTO_APPROVE' || i.manager_action?.resolution === 'APPROVE' || i.manager_action?.resolution === 'SWITCH_LEAVE_TYPE').length;
+    const pendingEscalate = items.filter(i => i.outcome === 'ESCALATE' && !i.manager_action).length;
+    const totalEscalate = items.filter(i => i.outcome === 'ESCALATE').length;
+    const reject = items.filter(i => i.outcome === 'REJECT' || i.manager_action?.resolution === 'REJECT').length;
+
+    document.getElementById('stat-total').textContent   = totalCount;
     document.getElementById('stat-approve').textContent  = approve;
-    document.getElementById('stat-escalate').textContent = escalate;
+    document.getElementById('stat-escalate').textContent = totalEscalate;
+    const escSubEl = document.getElementById('stat-escalate-sub');
+    if (escSubEl) {
+      escSubEl.textContent = pendingEscalate > 0 ? `${pendingEscalate} đơn chờ quyết định` : 'đã xử lý xong';
+    }
     document.getElementById('stat-reject').textContent   = reject;
     statsRow.style.display = 'grid';
 
     let rows = '';
     items.forEach((item, idx) => {
       const bcls = outcomeBadgeClass(item.outcome);
-      const unc  = item.uncertainty_category && item.uncertainty_category !== 'NONE'
-        ? `<span class="chip yellow" style="margin-left:6px;font-size:10px">${escHtml(item.uncertainty_category)}</span>` : '';
-      const escQ = item.escalation_question
-        ? `<div class="expand-field full"><label>Escalation Question <span style="text-transform:none;font-weight:400">(AI)</span></label><p>${escHtml(item.escalation_question)}</p></div>` : '';
+      const itemTime = item.time || item.timestamp || item.evaluated_at || '';
+      const itemEmpName = item.employee_name || item.name || 'Nhân Viên';
+      const itemLeaveType = item.leave_type || item.type || 'ANNUAL';
+      const itemDays = item.days !== undefined ? item.days : 1;
+      const itemDecisionId = item.decision_id || item.id || '';
+      const itemUnc = item.uncertainty_category || item.uncertainty || 'NONE';
+      const itemPolicy = item.policy_basis || item.policy || '—';
+      const itemQuestion = item.escalation_question || item.question || '';
+      const itemReceipt = item.cryptographic_receipt || item.receipt || '—';
+
+      const unc = itemUnc && itemUnc !== 'NONE'
+        ? `<span class="chip yellow" style="margin-left:6px;font-size:10px">${escHtml(itemUnc)}</span>` : '';
+      const escQ = itemQuestion
+        ? `<div class="expand-field full"><label>Câu Hỏi Phân Quyết (AI Escalation)</label><p style="color:#b45309;font-weight:600">${escHtml(itemQuestion)}</p></div>` : '';
+
+      // Decision / Action column badge
+      let decisionBadge = '';
+      if (item.outcome === 'ESCALATE') {
+        if (item.manager_action) {
+          const actRes = item.manager_action.resolution;
+          const actColor = actRes === 'APPROVE' ? '#166534' : actRes === 'SWITCH_LEAVE_TYPE' ? '#1e40af' : '#991b1b';
+          const actBg = actRes === 'APPROVE' ? 'rgba(22,163,74,0.12)' : actRes === 'SWITCH_LEAVE_TYPE' ? 'rgba(59,130,246,0.12)' : 'rgba(239,68,68,0.12)';
+          const actLabel = actRes === 'APPROVE' ? '✓ Duyệt' : actRes === 'SWITCH_LEAVE_TYPE' ? '🔄 Đổi Nghỉ KL' : '✕ Từ Chối';
+          decisionBadge = `<span class="status-chip" style="color:${actColor};background:${actBg};border:1px solid ${actColor}40;font-size:11px;font-weight:700">${actLabel}</span>`;
+        } else {
+          decisionBadge = `<button type="button" class="btn btn-sm" style="background:#f59e0b;color:#0f172a;font-weight:800;font-size:11px;padding:3px 10px;border-radius:6px;box-shadow:0 1px 4px rgba(245,158,11,0.25);cursor:pointer" onclick="event.stopPropagation(); openHistoryDecision(${idx})">⚡ Ra Quyết Định</button>`;
+        }
+      } else if (item.outcome === 'AUTO_APPROVE') {
+        decisionBadge = `<span style="color:#16a34a;font-size:11.5px;font-weight:600">✓ Tự Động Duyệt</span>`;
+      } else if (item.outcome === 'REJECT') {
+        decisionBadge = `<span style="color:#ef4444;font-size:11.5px;font-weight:600">✕ Tự Động Từ Chối</span>`;
+      } else {
+        decisionBadge = `<span class="muted" style="font-size:11px">—</span>`;
+      }
+
+      // HITL Override Block in expanded section
+      let hitlOverrideBlock = '';
+      if (item.outcome === 'ESCALATE') {
+        if (!item.manager_action) {
+          hitlOverrideBlock = `
+            <div style="grid-column: 1 / -1; margin-top: 10px; padding: 14px 16px; background: rgba(245, 158, 11, 0.08); border: 1.5px solid #f59e0b; border-radius: 8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; flex-wrap:wrap; gap:8px">
+                <div style="font-weight: 800; font-size: 13px; color: #b45309; display: flex; align-items: center; gap: 6px;">
+                  <span>⚡ CẦN QUYẾT ĐỊNH CỦA QUẢN LÝ (HUMAN-IN-THE-LOOP OVERRIDE)</span>
+                </div>
+                <span class="chip yellow" style="font-size:11px; font-weight:700">${escHtml(itemUnc)}</span>
+              </div>
+              <p style="font-size: 13px; color: var(--text); line-height: 1.5; margin: 0 0 10px; font-weight: 500;">
+                ${itemQuestion ? escHtml(itemQuestion) : 'Hồ sơ có điểm dừng nghi vấn theo quy chế. Cần cấp thẩm quyền ra quyết định can thiệp chính thức.'}
+              </p>
+              <div style="font-size: 11.5px; color: var(--muted); margin-bottom: 12px;">
+                Hành động phân xử sẽ được ghi nhận vào Sổ Cái Kiểm Toán bất biến với biên lai mã hóa SHA-256.
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-sm" id="btn-hist-app-${idx}" style="background:#16a34a; color:#fff; font-weight:700; padding:6px 14px; border-radius:6px; cursor:pointer;" onclick="event.stopPropagation(); handleHistoryOverride(${idx}, 'APPROVE')">
+                  ✍️ Ký Duyệt Phê Chuẩn (Approve)
+                </button>
+                <button type="button" class="btn btn-sm" id="btn-hist-rej-${idx}" style="background:#dc2626; color:#fff; font-weight:700; padding:6px 14px; border-radius:6px; cursor:pointer;" onclick="event.stopPropagation(); handleHistoryOverride(${idx}, 'REJECT')">
+                  ✕ Bác Bỏ / Từ Chối (Reject)
+                </button>
+                <button type="button" class="btn btn-sm" id="btn-hist-sw-${idx}" style="background:#4f46e5; color:#fff; font-weight:700; padding:6px 14px; border-radius:6px; cursor:pointer;" onclick="event.stopPropagation(); handleHistoryOverride(${idx}, 'SWITCH_LEAVE_TYPE', 'UNPAID')">
+                  🔄 Đổi Nghỉ Không Lương (Unpaid)
+                </button>
+              </div>
+            </div>`;
+        } else {
+          hitlOverrideBlock = `
+            <div style="grid-column: 1 / -1; margin-top: 10px; padding: 12px 16px; background: rgba(22, 163, 74, 0.08); border: 1.5px solid #16a34a; border-radius: 8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px">
+                <span style="font-weight: 800; font-size: 13px; color: #166534; display:flex; align-items:center; gap:6px;">
+                  ✓ ĐÃ ĐƯỢC PHÂN XỬ BỞI QUẢN LÝ (OVERRIDDEN)
+                </span>
+                <span class="status-chip chip-approved" style="font-size:10.5px; font-weight:700">${escHtml(item.manager_action.resolution)}</span>
+              </div>
+              <div style="font-size:12px; color:#15803d; line-height:1.5;">
+                Thời gian phân xử: <strong>${formatTime(item.manager_action.at)}</strong><br>
+                Mã biên nhận mật mã: <code class="mono" style="font-size:11px; background:rgba(0,0,0,0.06); padding:2px 4px; border-radius:4px">${escHtml(item.manager_action.receipt)}</code>
+              </div>
+            </div>`;
+        }
+      }
 
       rows += `
-        <tr onclick="toggleExpand(${idx})" title="Click to expand">
-          <td class="muted">${formatTime(item.time)}</td>
-          <td>${escHtml(item.employee_name)}</td>
-          <td><span class="chip blue">${escHtml(item.leave_type)}</span></td>
-          <td>${item.days}d</td>
+        <tr onclick="toggleExpand(${idx})" title="Nhấn để xem chi tiết / ra quyết định" style="cursor:pointer">
+          <td class="muted">${formatTime(itemTime)}</td>
+          <td style="font-weight:600">${escHtml(itemEmpName)}</td>
+          <td><span class="chip blue">${escHtml(itemLeaveType)}</span></td>
+          <td>${itemDays} ngày</td>
           <td><span class="outcome-badge ${bcls}" style="font-size:10.5px;padding:3px 10px">${outcomeIcon(item.outcome)} ${escHtml(item.outcome)}</span>${unc}</td>
-          <td class="muted mono">${short(item.decision_id, 8)}…</td>
+          <td>${decisionBadge}</td>
+          <td class="muted mono">${short(itemDecisionId, 8)}…</td>
         </tr>
         <tr class="expand-row" id="exp-${idx}">
-          <td colspan="6">
+          <td colspan="7">
             <div class="expand-inner">
-              <div class="expand-field"><label>Decision ID</label><p class="mono">${escHtml(item.decision_id)}</p></div>
-              <div class="expand-field"><label>Evaluated At</label><p>${formatTime(item.evaluated_at)}</p></div>
-              <div class="expand-field"><label>Uncertainty</label><p>${escHtml(item.uncertainty_category)}</p></div>
-              <div class="expand-field full"><label>Policy Basis</label><p>${escHtml(item.policy_basis)}</p></div>
+              <div class="expand-field"><label>Mã Quyết Định (Decision ID)</label><p class="mono">${escHtml(itemDecisionId)}</p></div>
+              <div class="expand-field"><label>Thời Gian Thẩm Định</label><p>${formatTime(itemTime)}</p></div>
+              <div class="expand-field"><label>Phân Loại Rủi Ro (Uncertainty)</label><p>${escHtml(itemUnc)}</p></div>
+              <div class="expand-field full"><label>Căn Cứ Pháp Lý &amp; Quy Chế</label><p>${escHtml(itemPolicy)}</p></div>
               ${escQ}
-              <div class="expand-field full"><label>Cryptographic Receipt</label><p class="mono">${escHtml(item.cryptographic_receipt)}</p></div>
+              <div class="expand-field full"><label>Biên Nhận Mật Mã (SHA-256 Receipt)</label><p class="mono">${escHtml(itemReceipt)}</p></div>
+              ${hitlOverrideBlock}
             </div>
           </td>
         </tr>`;
@@ -1394,15 +3214,20 @@
 
     cont.innerHTML = `
       <div style="padding:12px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center">
-        <span style="font-size:13px; font-weight:600; color:var(--text)">${items.length} Evaluation${items.length !== 1 ? 's' : ''}</span>
-        <button class="btn btn-outline btn-sm" onclick="clearHistory()">Clear All</button>
+        <span style="font-size:13px; font-weight:600; color:var(--text)">${items.length} Giao Dịch Thẩm Định</span>
+        <button class="btn btn-outline btn-sm" onclick="clearHistory()">Xóa Toàn Bộ Lịch Sử</button>
       </div>
       <div class="table-wrapper" style="border:none;border-radius:0">
         <table>
           <thead>
             <tr>
-              <th>Time</th><th>Employee</th><th>Leave Type</th>
-              <th>Days</th><th>Outcome</th><th>Decision ID</th>
+              <th>Thời Gian</th>
+              <th>Nhân Viên</th>
+              <th>Loại Nghỉ</th>
+              <th>Số Ngày</th>
+              <th>Kết Quả AI</th>
+              <th>Quyết Định (HITL)</th>
+              <th>Mã Biên Nhận / ID</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -1414,8 +3239,115 @@
     const row = document.getElementById('exp-' + idx);
     if (row) row.classList.toggle('open');
   }
+
+  function openHistoryDecision(idx) {
+    const row = document.getElementById('exp-' + idx);
+    if (row) {
+      row.classList.add('open');
+      row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  async function handleHistoryOverride(historyIdx, resolution, newLeaveType = 'UNPAID') {
+    const items = loadHistory();
+    const item = items[historyIdx];
+    if (!item) return;
+
+    const decisionId = item.decision_id || item.id;
+    if (!decisionId) {
+      alert('Không tìm thấy decision_id của bản ghi này.');
+      return;
+    }
+
+    const finalDecisionId = isUuid(decisionId) ? decisionId : crypto.randomUUID();
+    const finalRequestId = isUuid(item.request_id) ? item.request_id : crypto.randomUUID();
+
+    const clickedBtn = event?.currentTarget;
+    const originalText = clickedBtn ? clickedBtn.innerHTML : '';
+    if (clickedBtn) {
+      clickedBtn.disabled = true;
+      clickedBtn.innerHTML = '<span class="spinner" style="width:12px;height:12px"></span> Đang Ghi Sổ Cái…';
+    }
+
+    try {
+      const payloadBody = {
+        decision_id: finalDecisionId,
+        request_id: finalRequestId,
+        reviewer_id: EMPLOYEE_ID,
+        resolution: resolution,
+        reviewer_notes: resolution === 'APPROVE'
+          ? 'Ký duyệt phê chuẩn đặc cách trực tiếp từ Sổ Cái Kiểm Toán (Audit Ledger).'
+          : resolution === 'SWITCH_LEAVE_TYPE'
+          ? `Chuyển sang hình thức nghỉ không lương (${newLeaveType}) trực tiếp từ Sổ Cái Kiểm Toán.`
+          : 'Bác bỏ / Từ chối yêu cầu trực tiếp từ Sổ Cái Kiểm Toán.',
+        override_at: new Date().toISOString()
+      };
+
+      if (resolution === 'SWITCH_LEAVE_TYPE') {
+        payloadBody.new_leave_type = newLeaveType;
+      }
+
+      const resp = await fetch(`${API_BASE}/api/v1/override`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloadBody)
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data?.error || data?.message || 'Override request failed');
+
+      // Update history item
+      item.decision_id = finalDecisionId;
+      item.request_id = finalRequestId;
+      item.manager_action = {
+        resolution: resolution,
+        receipt: data.cryptographic_receipt,
+        at: data.recorded_at,
+        new_leave_type: newLeaveType
+      };
+      saveHistory(items);
+
+      // Sync with applicant submissions (Đơn Của Tôi)
+      const myReqs = loadMyRequests();
+      const targetReq = myReqs.find(x => 
+        (finalDecisionId && x.decision_id === finalDecisionId) ||
+        (finalRequestId && x.request_id === finalRequestId) ||
+        (x.applicant_name === (item.employee_name || item.name) && x.leave_type === (item.leave_type || item.type))
+      );
+      if (targetReq) {
+        targetReq.manager_action = item.manager_action;
+        saveMyRequests(myReqs);
+        if (typeof renderMyRequests === 'function') renderMyRequests();
+      }
+
+      // Sync with Reviewer Portal if loaded
+      if (typeof reviewerEvalStates !== 'undefined') {
+        for (const key of Object.keys(reviewerEvalStates)) {
+          const st = reviewerEvalStates[key];
+          if (st?.result?.decision_id === finalDecisionId || key === targetReq?.id) {
+            st.managerAction = item.manager_action;
+          }
+        }
+        if (typeof renderReviewerCaseList === 'function') renderReviewerCaseList();
+        if (typeof renderReviewerDetail === 'function') renderReviewerDetail();
+      }
+
+      // Re-render history and keep this row expanded
+      renderHistory();
+      const targetExp = document.getElementById('exp-' + historyIdx);
+      if (targetExp) targetExp.classList.add('open');
+
+    } catch (err) {
+      alert('Lỗi ghi nhận quyết định: ' + err.message);
+      if (clickedBtn) {
+        clickedBtn.disabled = false;
+        clickedBtn.innerHTML = originalText;
+      }
+    }
+  }
+
   function clearHistory() {
-    if (!confirm('Clear all evaluation history?')) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử thẩm định?')) return;
     localStorage.removeItem(HISTORY_KEY);
     updateHistoryCount();
     renderHistory();
@@ -1629,21 +3561,25 @@
     resArea.innerHTML = `<div class="smoke-result running" style="border-radius:8px"><span class="spinner dark" style="width:14px;height:14px;border-width:2px"></span> Running OCR via Gemma 4 26B A4B…</div>`;
     rawLog.textContent = 'Waiting for response…';
 
-    // Build a fake leave request payload with the image as an attached document
+    // Build a leave request payload matching document type
     const docId = crypto.randomUUID();
+    const isMedical = vlmFileData.name.toLowerCase().includes('c65');
+    const formType = isMedical ? 'C65-HD' : 'ĐƠN XIN NGHỈ PHÉP';
+    const leaveType = isMedical ? 'SICK' : 'ANNUAL';
+
     const payload = {
       request_id:        crypto.randomUUID(),
       employee_id:       EMPLOYEE_ID,
       employee_name:     'VLM Test User',
       employment_status: 'CONFIRMED',
-      leave_type:        'SICK',
+      leave_type:        leaveType,
       start_date:        toISODate(new Date()),
       end_date:          toISODate(new Date(Date.now() + 2*864e5)),
       days_requested:    3,
       leave_balance: { annual_days_remaining: 10, sick_days_remaining: 30, maternity_weeks_remaining: 26, unpaid_days_used_ytd: 0 },
       attached_documents: [{
         document_id: docId,
-        form_type:   'C65-HD',
+        form_type:   formType,
         content_ref: vlmFileData.dataUrl,
         mime_type:   vlmFileData.mimeType,
       }],
@@ -1716,7 +3652,250 @@
       note.textContent = 'Done';
     }
   }
+
+  // ── Initial Setup on Page Load ──────────────────────────────
+  applyRoleUI();
+  updateMyRequestsCount();
+  if (currentRole === 'applicant') {
+    navigate('evaluate');
+  } else {
+    navigate('reviewer');
+  }
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════════════════ -->
+<!-- Policy Modal -->
+<div class="modal-backdrop" id="modal-policy" onclick="if(event.target===this)closePolicyModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3><span>🏢</span> Quy Chế Nghỉ Phép Doanh Nghiệp (HR Policy Framework)</h3>
+      <button type="button" class="modal-close-btn" onclick="closePolicyModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px; margin-bottom:14px">
+        <h4 style="font-weight:700; color:#1e40af; margin-bottom:6px">1. Điều Kiện Tự Động Phê Duyệt (Auto-Approve — &lt;10ms)</h4>
+        <ul style="padding-left:18px; font-size:12.5px; color:#1e3a8a; line-height:1.6">
+          <li><strong>Nghỉ phép năm (Điều 10.1):</strong> Nhân viên chính thức (CONFIRMED), còn đủ số ngày phép, đăng ký đúng hạn, thời gian nghỉ ≤ 5 ngày thuộc thẩm quyền Quản lý trực tiếp.</li>
+          <li><strong>Nghỉ ốm / Chế độ BHXH (Điều 14.1):</strong> Có Giấy chứng nhận nghỉ việc hưởng BHXH (Mẫu C65-HD) hoặc Giấy ra viện có dấu mộc đỏ tròn của cơ sở y tế và chữ ký bác sĩ chỉ định.</li>
+          <li><strong>Nghỉ việc riêng hưởng lương (Điều 15.3):</strong> Kết hôn (3 ngày), tứ thân phụ mẫu hoặc vợ/chồng/con qua đời (3 ngày) có minh chứng kèm theo.</li>
+        </ul>
+      </div>
+
+      <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:14px; margin-bottom:14px">
+        <h4 style="font-weight:700; color:#92400e; margin-bottom:8px">2. Ba Nhóm Bất Định Bắt Buộc Dừng (Escalate — Spec A)</h4>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:12.5px; color:#78350f">
+          <div>
+            <span style="font-weight:700; background:#fef3c7; padding:2px 6px; border-radius:4px">U1_DATA (Không chắc dữ kiện):</span>
+            Chứng từ scan mờ, mất góc, không có dấu mộc đỏ của bệnh viện, thiếu chữ ký bác sĩ hoặc không đọc rõ mốc ngày điều trị thực tế.
+          </div>
+          <div>
+            <span style="font-weight:700; background:#fef3c7; padding:2px 6px; border-radius:4px">U2_POLICY (Ngoài chính sách):</span>
+            Nhân viên thử việc (PROBATION) xin nghỉ phép năm hưởng lương (Vi phạm Điều 8.2), nghỉ việc riêng không có minh chứng hoặc trường hợp chưa có quy định cụ thể.
+          </div>
+          <div>
+            <span style="font-weight:700; background:#fef3c7; padding:2px 6px; border-radius:4px">U3_AUTHORITY (Vượt thẩm quyền):</span>
+            Nghỉ không lương &gt; 5 ngày, nghỉ phép liên tục &gt; 5 ngày, nghỉ dài hạn &gt; 20 ngày cần phân cấp Giám đốc Khối / HRD / Ban Giám Đốc phê duyệt.
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 14px; font-size:12px; color:#475569">
+        🔒 <strong>Nguyên tắc An toàn &amp; Sổ Cái Mật Mã:</strong> Toàn bộ quy tắc tính toán ngày phép và thẩm quyền được thực thi bằng mã nguồn tất định (Deterministic Engine). Mô hình VLM (Gemma 4 26B A4B) chỉ quét tính xác thực chứng từ và tổng hợp câu hỏi đóng đơn lượt (single-turn). Mọi phân xử đều sinh biên bản mã hóa SHA-256 lưu trữ bất biến.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" onclick="closePolicyModal()">Đã Hiểu &amp; Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- Standard Form Modal -->
+<div class="modal-backdrop" id="modal-standard-form" onclick="if(event.target===this)closeStandardFormModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3><span>📄</span> Biểu Mẫu Chuẩn BM-HR-01 &amp; Mẫu C65-HD BHXH</h3>
+      <button type="button" class="modal-close-btn" onclick="closeStandardFormModal()">✕</button>
+    </div>
+    <div class="modal-body" style="background:#f1f5f9; padding:16px">
+      <!-- Toolbar -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; background:white; padding:8px 12px; border-radius:8px; border:1px solid var(--border); flex-wrap:wrap; gap:8px">
+        <span style="font-size:12px; font-weight:600; color:var(--muted)">Quy chuẩn BM-HR-01 · Bộ Y Tế &amp; BHXH VN</span>
+        <div style="display:flex; gap:8px">
+          <button type="button" class="btn btn-outline" style="font-size:11.5px; padding:4px 10px" onclick="copyStandardForm()">📋 Sao chép mẫu</button>
+          <button type="button" class="btn btn-outline" style="font-size:11.5px; padding:4px 10px" onclick="printStandardForm()">🖨️ In / Tải PDF</button>
+          <button type="button" class="btn btn-primary" style="font-size:11.5px; padding:4px 10px" onclick="applyStandardFormToEval()">⚡ Nạp Mẫu vào Form</button>
+        </div>
+      </div>
+
+      <!-- Printable Form Content -->
+      <div id="standard-form-printable" style="background:white; border:1px solid var(--border); border-radius:10px; padding:24px; font-size:13px; color:#1e293b; line-height:1.6">
+        <div style="text-align:center; margin-bottom:16px">
+          <p style="font-weight:700; font-size:12px; text-transform:uppercase; margin:0">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+          <p style="font-weight:600; font-size:12px; margin:2px 0 6px">Độc lập – Tự do – Hạnh phúc</p>
+          <div style="width:90px; height:1px; background:#64748b; margin:0 auto 10px"></div>
+          <h3 style="font-size:16px; font-weight:800; text-transform:uppercase; margin:10px 0 2px">ĐƠN XIN NGHỈ PHÉP</h3>
+          <p style="font-size:11px; color:#64748b; font-family:monospace; margin:0">Mã biểu mẫu: BM-HR-01 · Ban hành theo Quy chế Quản lý Nhân sự</p>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:12px">
+          <strong>Kính gửi:</strong>
+          <ul style="margin:4px 0 0 16px; color:#475569">
+            <li>Ban Giám Đốc Khối / Công ty;</li>
+            <li>Trưởng phòng Bộ phận trực tiếp;</li>
+            <li>Phòng Nhân Sự (HR).</li>
+          </ul>
+        </div>
+
+        <p><strong>1. Thông tin nhân viên:</strong></p>
+        <p style="padding-left:12px; margin:4px 0">
+          • Họ và tên: <strong>Nguyễn Thị Hương</strong> &nbsp;&nbsp;|&nbsp;&nbsp; MSNV: <strong>NV-2024-0312</strong><br/>
+          • Phòng ban: <strong>Phòng Kinh doanh</strong> &nbsp;&nbsp;|&nbsp;&nbsp; Vị trí: <strong>Chuyên viên Kinh doanh</strong>
+        </p>
+
+        <p style="margin-top:10px"><strong>2. Thời gian và loại hình nghỉ:</strong></p>
+        <p style="padding-left:12px; margin:4px 0">
+          • Loại nghỉ: <strong>Nghỉ phép năm hưởng lương (ANNUAL)</strong><br/>
+          • Thời gian: từ ngày <strong>15/10/2025</strong> đến hết ngày <strong>15/10/2025</strong> (Tổng: <strong>1 ngày</strong>)<br/>
+          • Lý do xin nghỉ: <strong>Giải quyết việc cá nhân gia đình theo kế hoạch.</strong>
+        </p>
+
+        <p style="margin-top:10px"><strong>3. Bàn giao công việc:</strong></p>
+        <p style="padding-left:12px; margin:4px 0">
+          • Người tiếp nhận bàn giao: <strong>Trần Văn An (NV-2023-0105)</strong><br/>
+          • Cam kết tiến độ: Đã gửi tài liệu bàn giao qua email và hệ thống quản lý công việc.
+        </p>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; text-align:center; margin-top:24px; font-size:12px">
+          <div>
+            <strong>Người làm đơn</strong><br/>
+            <span style="font-size:11px; color:#64748b">(Ký và ghi rõ họ tên)</span>
+            <div style="height:45px"></div>
+            <strong>Nguyễn Thị Hương</strong>
+          </div>
+          <div>
+            <strong>Người nhận bàn giao</strong><br/>
+            <span style="font-size:11px; color:#64748b">(Ký xác nhận)</span>
+            <div style="height:45px"></div>
+            <strong>Trần Văn An</strong>
+          </div>
+          <div>
+            <strong>Quản lý trực tiếp</strong><br/>
+            <span style="font-size:11px; color:#64748b">(Phê duyệt)</span>
+            <div style="height:45px"></div>
+            <strong style="color:#059669">✓ Đã Phê Duyệt</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="closeStandardFormModal()">Đóng</button>
+      <button type="button" class="btn btn-primary" onclick="applyStandardFormToEval()">Nạp Dữ Liệu vào Form</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login Modal / Role Switcher -->
+<div class="login-backdrop" id="modal-login" onclick="if(event.target===this)closeLoginModal()">
+  <div class="login-card">
+    <div class="login-header">
+      <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:6px">
+        <div style="width:36px; height:36px; border-radius:10px; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:18px">
+          ⚖️
+        </div>
+        <h2 style="font-size:20px; font-weight:800; margin:0">ClearFlowHR — Cổng Đăng Nhập &amp; Phân Quyền</h2>
+      </div>
+      <p style="font-size:13px; color:#cbd5e1; margin:0">
+        Hệ thống phân xử và thẩm định nghỉ phép tự động (AER). Vui lòng chọn vai trò để truy cập:
+      </p>
+      <button type="button" onclick="closeLoginModal()" style="position:absolute; top:20px; right:20px; background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer; padding:4px 8px; border-radius:6px">✕</button>
+    </div>
+
+    <div class="login-body">
+      <div class="role-grid">
+        <!-- Role 1: Applicant -->
+        <div class="role-card" id="login-role-card-applicant" onclick="selectLoginRole('applicant')">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+              <div class="role-icon-box" style="background:#e0f2fe; color:#0284c7">👤</div>
+              <span class="role-badge-tag applicant">ROLE: APPLICANT</span>
+            </div>
+            <h3 style="font-size:16px; font-weight:800; color:var(--text); margin:0 0 6px">
+              Nhân Viên (Người Làm Đơn)
+            </h3>
+            <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0 0 14px">
+              Quyền hạn chỉ được gửi Đơn xin nghỉ phép (PDF) và Tài liệu minh chứng (Ảnh/PDF C65-HD), theo dõi tiến độ và biên lai số.
+            </p>
+
+            <div style="background:#f1f5f9; border-radius:10px; padding:12px; margin-bottom:14px">
+              <label style="font-size:11px; font-weight:700; color:#475569; text-transform:uppercase; display:block; margin-bottom:6px">
+                Chọn tài khoản nhân viên:
+              </label>
+              <select id="login-applicant-select" class="form-control" style="width:100%; font-size:12.5px; padding:7px 10px; border-radius:7px; border:1px solid #cbd5e1" onclick="event.stopPropagation()">
+                <option value="applicant_huong">Nguyễn Thị Hương (Kinh Doanh · NV-2024-0312)</option>
+                <option value="applicant_phuong">Lê Thị Phương (Sản Xuất · NV-1981-0592)</option>
+              </select>
+            </div>
+
+            <ul style="font-size:11.5px; color:#475569; padding-left:16px; margin:0; line-height:1.6">
+              <li>📄 Nộp đơn nghỉ định dạng PDF (BM-HR-01)</li>
+              <li>🩺 Đính kèm chứng từ y tế C65-HD / giấy ra viện</li>
+              <li>📊 Theo dõi trạng thái &amp; biên lai mật mã SHA-256</li>
+              <li style="color:#94a3b8">🔒 <em>Không có quyền duyệt hoặc xem sổ cái kiểm toán</em></li>
+            </ul>
+          </div>
+
+          <div style="margin-top:20px">
+            <button type="button" class="btn btn-primary" style="width:100%; justify-content:center; background:#0284c7; padding:9px" onclick="submitLoginRole('applicant')">
+              Đăng Nhập Với Vai Trò Nhân Viên ➔
+            </button>
+          </div>
+        </div>
+
+        <!-- Role 2: Admin -->
+        <div class="role-card" id="login-role-card-admin" onclick="selectLoginRole('admin')">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+              <div class="role-icon-box" style="background:#fef3c7; color:#b45309">🛡️</div>
+              <span class="role-badge-tag admin">ROLE: HR ADMIN</span>
+            </div>
+            <h3 style="font-size:16px; font-weight:800; color:var(--text); margin:0 0 6px">
+              Quản Trị Viên (HR Admin / Reviewer)
+            </h3>
+            <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0 0 14px">
+              Quyền hạn xem sổ cái kiểm toán, đối soát thư mục hồ sơ, thẩm định lại (Rejudge) và ký duyệt / từ chối đơn phân xử.
+            </p>
+
+            <div style="background:#f1f5f9; border-radius:10px; padding:12px; margin-bottom:14px">
+              <label style="font-size:11px; font-weight:700; color:#475569; text-transform:uppercase; display:block; margin-bottom:6px">
+                Chọn tài khoản Quản trị:
+              </label>
+              <select id="login-admin-select" class="form-control" style="width:100%; font-size:12.5px; padding:7px 10px; border-radius:7px; border:1px solid #cbd5e1" onclick="event.stopPropagation()">
+                <option value="admin_quanly">Nguyễn Quản Lý (Trưởng Ban HR · HR-ADMIN-01)</option>
+                <option value="admin_giamdoc">Trần Giám Đốc (Giám Đốc Khối · BOD-EXEC-02)</option>
+              </select>
+            </div>
+
+            <ul style="font-size:11.5px; color:#475569; padding-left:16px; margin:0; line-height:1.6">
+              <li>📜 Xem toàn bộ Sổ Cái Kiểm Toán &amp; Logs giao dịch</li>
+              <li>⚡ Thẩm Định Lại (Rejudge) với Gemma 4 26B VLM</li>
+              <li>✍️ Ra quyết định Ký Duyệt / Từ Chối / Đổi loại nghỉ (HITL)</li>
+              <li>🔒 Sinh biên bản mã hóa SHA-256 bất biến trên Ledger</li>
+            </ul>
+          </div>
+
+          <div style="margin-top:20px">
+            <button type="button" class="btn btn-primary" style="width:100%; justify-content:center; background:#d97706; padding:9px" onclick="submitLoginRole('admin')">
+              Đăng Nhập Với Vai Trò HR Admin ➔
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
+
