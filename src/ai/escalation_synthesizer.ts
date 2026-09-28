@@ -89,7 +89,9 @@ const TEMPLATES: Record<
  * Model for escalation question language enrichment.
  * A text-only model is sufficient — no vision capability needed here.
  */
-const SYNTH_MODEL = process.env["SYNTH_MODEL"] ?? "google/gemma-4-26b-a4b-it";
+function getSynthesisModel(): string {
+  return process.env["SYNTH_MODEL"] ?? "google/gemma-4-26b-a4b-it";
+}
 
 const SYNTH_SYSTEM_PROMPT = `\
 You are a professional HR escalation assistant. Your ONLY task is to rewrite the provided \
@@ -113,7 +115,7 @@ async function enrichWithLlm(
   try {
     const response = await callOpenRouter(
       {
-        model: SYNTH_MODEL,
+        model: getSynthesisModel(),
         messages: [
           { role: "system", content: SYNTH_SYSTEM_PROMPT },
           {

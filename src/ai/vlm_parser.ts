@@ -57,14 +57,16 @@ export type VlmParseOutcome =
 /** Minimum acceptable confidence score for a VLM result to be trusted. */
 const CONFIDENCE_THRESHOLD = 0.70;
 
-/** VLM request timeout in milliseconds. */
-const VLM_TIMEOUT_MS = parseInt(process.env["VLM_TIMEOUT_MS"] ?? "15000", 10);
+function getVlmTimeoutMs(): number {
+  const configuredTimeout = Number(process.env["VLM_TIMEOUT_MS"]);
+  return Number.isSafeInteger(configuredTimeout) && configuredTimeout > 0
+    ? Math.min(configuredTimeout, 10_000)
+    : 10_000;
+}
 
-/**
- * OpenRouter model used for vision/OCR tasks.
- * Uses google/gemma-4-26b-a4b-it (or VLM_MODEL from env) for multimodal document analysis.
- */
-const VLM_MODEL = process.env["VLM_MODEL"] ?? "google/gemma-4-26b-a4b-it";
+function getVlmModel(): string {
+  return process.env["VLM_MODEL"] ?? "google/gemma-4-26b-a4b-it";
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // System prompt — structural extraction only, no policy reasoning
@@ -129,7 +131,7 @@ export async function parseDocument(
   try {
     const response = await callOpenRouter(
       {
-        model: VLM_MODEL,
+        model: getVlmModel(),
         messages: [
           {
             role: "system",
@@ -155,7 +157,7 @@ export async function parseDocument(
         max_tokens: 256,
         temperature: 0, // deterministic extraction — no creative variance
       },
-      VLM_TIMEOUT_MS
+      getVlmTimeoutMs()
     );
 
     const rawContent = response.choices[0]?.message?.content ?? "";

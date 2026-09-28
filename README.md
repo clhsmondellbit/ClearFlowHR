@@ -14,7 +14,9 @@ pnpm install
 pnpm run dev
 ```
 
-Mở trình duyệt tại **http://localhost:3000** → Dashboard AER.
+Mở trình duyệt tại **http://localhost:4647** → Dashboard AER. Port có thể đổi bằng biến `PORT`.
+
+Nếu cần gọi OpenRouter, sao chép `.env.example` thành `.env` và đặt `OPENROUTER_API_KEY`. Các thiết lập model và timeout cũng được đọc từ `.env`.
 
 ---
 
@@ -22,13 +24,10 @@ Mở trình duyệt tại **http://localhost:3000** → Dashboard AER.
 
 | Công cụ | Phiên bản tối thiểu |
 |---------|---------------------|
-| Node.js | ≥ 20.x              |
-| pnpm    | ≥ 8.x               |
+| Node.js | ≥ 22.x              |
+| pnpm    | 12.5.1 (được ghim trong `package.json`) |
 
-Cài pnpm nếu chưa có:
-```bash
-npm install -g pnpm
-```
+Kích hoạt Corepack để dùng phiên bản pnpm được ghim trong dự án.
 
 ---
 
@@ -36,13 +35,16 @@ npm install -g pnpm
 
 ```
 ClearFlowHR/
+├── Dockerfile            # Multi-stage production image
+├── .dockerignore         # Excludes local secrets and development files
+├── .env.example          # Local configuration template
 ├── public/               # Frontend dashboard (single HTML file, no build step)
 │   └── index.html
 ├── src/
-│   ├── index.ts          # Express server entry point (port 3000)
+│   ├── index.ts          # Express server entry point (default port 4647)
 │   ├── api/routes/
 │   │   ├── evaluate.ts   # POST /api/v1/evaluate
-│   │   ├── override.ts   # POST /api/v1/override (Phase 2 stub)
+│   │   ├── override.ts   # POST /api/v1/override
 │   │   └── schemas.ts    # Zod data contracts
 │   ├── core/
 │   │   ├── orchestrator.ts        # Decision pipeline controller
@@ -52,7 +54,7 @@ ClearFlowHR/
 │   │       └── authority.ts       # Approval tier routing (TIER_1/2/3)
 │   ├── ai/
 │   │   ├── escalation_synthesizer.ts  # Escalation question synthesis (template fallback)
-│   │   └── vlm_parser.ts              # VLM document parser stub
+│   │   └── vlm_parser.ts              # VLM document parser
 │   └── ledger/
 │       └── audit.ts       # SHA-256 cryptographic receipts
 └── tests/
@@ -121,7 +123,8 @@ Kiểm tra server hoạt động.
 ---
 
 ### `POST /api/v1/override`
-_(Phase 2 — hiện trả về 501 stub)_
+
+Nhận resolution của reviewer và trả về receipt SHA-256. Payload được kiểm tra bằng Zod. Xác thực danh tính reviewer và ghi ledger bền vững chưa được triển khai.
 
 ---
 
@@ -193,6 +196,19 @@ Xem [`tests/BENCHMARK_CASES.md`](./tests/BENCHMARK_CASES.md) để biết địn
 - `employee_id` phải là SHA-256 hex của ID gốc (không bao giờ log PII thô).
 - Mọi quyết định đều có `cryptographic_receipt` (SHA-256 digest).
 - LLM chỉ được dùng để sinh ngôn ngữ cho `escalation_question` — không bao giờ tính toán nghiệp vụ.
+- `leave_balance` hiện là snapshot do caller gửi lên; dịch vụ chưa giữ hoặc khấu trừ số dư bền vững.
+- Các hàm ghi ledger trong `src/ledger/audit.ts` hiện là stub; receipt không thay thế lưu trữ kiểm toán bền vững.
+
+---
+
+## 🐳 Chạy bằng Docker
+
+```bash
+docker build -t clearflowhr .
+docker run --rm -p 4647:4647 --env-file .env clearflowhr
+```
+
+Tạo `.env` từ `.env.example` trước khi chạy nếu cần cấu hình OpenRouter. Có thể đổi port bằng `-e PORT=...`.
 
 ---
 
@@ -200,7 +216,7 @@ Xem [`tests/BENCHMARK_CASES.md`](./tests/BENCHMARK_CASES.md) để biết địn
 
 | Layer | Technology |
 |-------|-----------|
-| Runtime | Node.js 20+ |
+| Runtime | Node.js 22+ |
 | Framework | Express 5 |
 | Language | TypeScript 7 |
 | Validation | Zod 4 |
