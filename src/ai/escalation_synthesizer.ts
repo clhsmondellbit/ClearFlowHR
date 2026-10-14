@@ -25,7 +25,12 @@
 
 import type { UncertaintyCategory, LeaveType } from "../api/routes/schemas.js";
 import type { ApprovalTier } from "../core/rules/authority.js";
-import { callOpenRouter, getApiKey } from "./openrouter_client.js";
+import {
+  callOpenRouter,
+  createOpenRouterModelRoute,
+  getApiKey,
+  getOpenRouterFailureSummary,
+} from "./openrouter_client.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Input / Output types
@@ -90,7 +95,14 @@ const TEMPLATES: Record<
  * A text-only model is sufficient — no vision capability needed here.
  */
 function getSynthesisModel(): string {
-  return process.env["SYNTH_MODEL"] ?? "google/gemma-4-26b-a4b-it";
+  return process.env["SYNTH_MODEL"] ?? process.env["AI_MODEL"] ?? "gpt-6-luna";
+}
+
+function getSynthesisModelRoute() {
+  return createOpenRouterModelRoute(
+    getSynthesisModel(),
+    process.env["SYNTH_FALLBACK_MODELS"]
+  );
 }
 
 const SYNTH_SYSTEM_PROMPT = `\
@@ -98,11 +110,45 @@ You are a professional HR escalation assistant. Your ONLY task is to rewrite the
 escalation question in clear, concise, professional English.
 
 Rules you MUST follow:
-1. Keep it as a single closed question ending with decision options in square brackets.
-2. Do NOT change the decision options, outcome, or policy citation.
-3. Do NOT add new information, opinions, or recommendations.
-4. Do NOT calculate leave balances or interpret labor laws.
-5. Output ONLY the rewritten question — no preamble, no explanation.`;
+1. Rewrite only the text before the final Decision clause.
+2. Copy the entire final Decision clause exactly as provided, including every option.
+3. Preserve all policy citations exactly as written.
+4. Keep the result as a single closed question.
+5. Do NOT change the outcome, options, or policy citation.
+6. Do NOT add new information, opinions, or recommendations.
+7. Do NOT calculate leave balances or interpret labor laws.
+8. Output ONLY the rewritten question — no preamble, no explanation.`;
+
+let invalidOutputWarningLogged = false;
+
+function validateAndPreserveDecisionClause(
+  generatedText: string,
+  templateQuestion: string
+): string | null {
+  const decisionClauseStart = templateQuestion.lastIndexOf("Decision:");
+  if (decisionClauseStart < 0) return null;
+
+  const decisionClause = templateQuestion.slice(decisionClauseStart);
+  const marker = /\bdecision\b\s*[:：—-]?/i.exec(generatedText);
+  const firstOption = generatedText.indexOf("[");
+  const prefixEnd = marker?.index ?? firstOption;
+  if (prefixEnd <= 0) return null;
+
+  const prefix = generatedText.slice(0, prefixEnd).trim().replace(/[\s.,;:!?-]+$/, "");
+  const requiredOptions = decisionClause.match(/\[[^\]]+\]/g) ?? [];
+  const requiredCitations = templateQuestion.match(/\bArticle\s+[\d.]+(?:\s*\([^)]*\))?/gi) ?? [];
+
+  if (
+    !prefix ||
+    requiredOptions.length === 0 ||
+    !requiredOptions.every((option) => generatedText.includes(option)) ||
+    !requiredCitations.every((citation) => generatedText.includes(citation))
+  ) {
+    return null;
+  }
+
+  return `${prefix}. ${decisionClause}`;
+}
 
 /**
  * Attempts to enrich the template question via OpenRouter.
@@ -115,12 +161,13 @@ async function enrichWithLlm(
   try {
     const response = await callOpenRouter(
       {
-        model: getSynthesisModel(),
+        ...getSynthesisModelRoute(),
         messages: [
           { role: "system", content: SYNTH_SYSTEM_PROMPT },
           {
             role: "user",
             content:
+              `Rewrite only the wording before the final Decision clause. Copy that clause exactly. ` +
               `Rewrite the following HR escalation question for employee "${input.employee_name}" ` +
               `(${input.leave_type} leave, ${input.days_requested} day(s), ` +
               `uncertainty: ${input.uncertainty_category}):\n\n${templateQuestion}`,
@@ -128,32 +175,34 @@ async function enrichWithLlm(
         ],
         max_tokens: 300,
         temperature: 0.3,
+        reasoning: { enabled: false },
       },
       8_000 // timeout for enrichment
     );
 
-    let enriched = response.choices[0]?.message?.content?.trim() ?? "";
+    const choice = response.choices[0];
+    let enriched = choice?.message?.content?.trim() ?? "";
     // Remove any <think>...</think> reasoning blocks from modern reasoning models
     enriched = enriched.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
 
-    // Safety: only use the LLM output if it still contains "Decision:" and option brackets
-    if (
-      enriched.length > 0 &&
-      enriched.includes("Decision:") &&
-      enriched.includes("[") &&
-      enriched.includes("]")
-    ) {
-      return enriched;
+    const validatedQuestion = validateAndPreserveDecisionClause(enriched, templateQuestion);
+    if (validatedQuestion) return validatedQuestion;
+
+    if (!invalidOutputWarningLogged) {
+      console.warn(
+        "[AER/escalation_synthesizer] LLM rewrite did not preserve decision options or policy citations; " +
+          `using template fallback (finish_reason=${choice?.finish_reason ?? "unknown"}, ` +
+          `reasoning_tokens=${response.usage?.completion_tokens_details?.reasoning_tokens ?? 0})`
+      );
+      invalidOutputWarningLogged = true;
     }
-    // LLM output looks malformed — fall back to template
-    console.warn(
-      "[AER/escalation_synthesizer] LLM output did not contain expected 'Decision:' or option brackets — using template fallback"
-    );
     return templateQuestion;
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const failureSummary = getOpenRouterFailureSummary(err);
     console.warn(
-      `[AER/escalation_synthesizer] LLM enrichment failed (${message}) — using template fallback`
+      "[AER/escalation_synthesizer] LLM enrichment unavailable (" +
+        failureSummary +
+        ") — using template fallback"
     );
     return templateQuestion;
   }

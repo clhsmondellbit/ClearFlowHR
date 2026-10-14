@@ -2,7 +2,7 @@
  * @file vlm_parser.ts
  * @description Vision-Language Model (VLM) integration for C65-HD form analysis via OpenRouter.
  *
- * Model: Uses OpenRouter's vision-capable model (google/gemini-flash-1.5) for OCR.
+ * Model: Uses the configured OpenRouter vision-capable model for OCR.
  * Falls back gracefully when the API key is absent or the call fails.
  *
  * Responsibilities:
@@ -18,8 +18,15 @@
  *   - The model response is parsed as structured JSON; free-text reasoning is discarded.
  */
 
+import { z } from "zod";
 import type { AttachedDocument } from "../api/routes/schemas.js";
-import { callOpenRouter, getApiKey } from "./openrouter_client.js";
+import {
+  callOpenRouter,
+  createOpenRouterModelRoute,
+  getApiKey,
+  getOpenRouterFailureSummary,
+  isOpenRouterTimeout,
+} from "./openrouter_client.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // VLM Analysis Result Types
@@ -57,6 +64,14 @@ export type VlmParseOutcome =
 /** Minimum acceptable confidence score for a VLM result to be trusted. */
 const CONFIDENCE_THRESHOLD = 0.70;
 
+const VlmModelOutputSchema = z.object({
+  red_stamp_detected: z.boolean(),
+  signature_detected: z.boolean(),
+  confidence_score: z.number().min(0).max(1),
+  extracted_issue_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+  extracted_issuing_authority: z.string().nullable(),
+});
+
 function getVlmTimeoutMs(): number {
   const configuredTimeout = Number(process.env["VLM_TIMEOUT_MS"]);
   return Number.isSafeInteger(configuredTimeout) && configuredTimeout > 0
@@ -65,7 +80,14 @@ function getVlmTimeoutMs(): number {
 }
 
 function getVlmModel(): string {
-  return process.env["VLM_MODEL"] ?? "google/gemma-4-26b-a4b-it";
+  return process.env["VLM_MODEL"] ?? process.env["AI_MODEL"] ?? "gpt-6-luna";
+}
+
+function getVlmModelRoute() {
+  return createOpenRouterModelRoute(
+    getVlmModel(),
+    process.env["VLM_FALLBACK_MODELS"]
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -131,7 +153,7 @@ export async function parseDocument(
   try {
     const response = await callOpenRouter(
       {
-        model: getVlmModel(),
+        ...getVlmModelRoute(),
         messages: [
           {
             role: "system",
@@ -156,30 +178,40 @@ export async function parseDocument(
         ],
         max_tokens: 256,
         temperature: 0, // deterministic extraction — no creative variance
+        reasoning: { enabled: false },
+        response_format: { type: "json_object" },
       },
       getVlmTimeoutMs()
     );
 
-    const rawContent = response.choices[0]?.message?.content ?? "";
+    const choice = response.choices[0];
+    const rawContent = choice?.message?.content ?? "";
+    const finishReason = choice?.finish_reason ?? "unknown";
+    const reasoningTokens = response.usage?.completion_tokens_details?.reasoning_tokens ?? 0;
+
+    if (!rawContent.trim()) {
+      console.warn(
+        `[AER/vlm_parser] Empty VLM response for document ${document.document_id} ` +
+          `(finish_reason=${finishReason}, reasoning_tokens=${reasoningTokens})`
+      );
+      return {
+        success: false,
+        failure_reason: "IMAGE_QUALITY_TOO_LOW",
+        document_id: document.document_id,
+      };
+    }
 
     // Extract JSON object substring, ignoring any reasoning or wrapper text
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
     const jsonText = jsonMatch ? jsonMatch[0] : rawContent.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
 
-    let parsed: {
-      red_stamp_detected: boolean;
-      signature_detected: boolean;
-      confidence_score: number;
-      extracted_issue_date: string | null;
-      extracted_issuing_authority: string | null;
-    };
-
+    let modelOutput: unknown;
     try {
-      parsed = JSON.parse(jsonText) as typeof parsed;
+      modelOutput = JSON.parse(jsonText);
     } catch {
-      console.error(
-        `[AER/vlm_parser] Failed to parse VLM JSON response for document ${document.document_id}:`,
-        rawContent
+      console.warn(
+        `[AER/vlm_parser] Invalid VLM JSON for document ${document.document_id} ` +
+          `(finish_reason=${finishReason}, content_length=${rawContent.length})`
       );
       // Treat as data uncertainty — do not fail open
       return {
@@ -188,6 +220,19 @@ export async function parseDocument(
         document_id: document.document_id,
       };
     }
+
+    const outputResult = VlmModelOutputSchema.safeParse(modelOutput);
+    if (!outputResult.success) {
+      console.warn(
+        `[AER/vlm_parser] VLM output did not match the expected fields for document ${document.document_id}`
+      );
+      return {
+        success: false,
+        failure_reason: "IMAGE_QUALITY_TOO_LOW",
+        document_id: document.document_id,
+      };
+    }
+    const parsed = outputResult.data;
 
     // Enforce confidence threshold
     if (parsed.confidence_score < CONFIDENCE_THRESHOLD) {
@@ -219,12 +264,17 @@ export async function parseDocument(
       },
     };
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    const isTimeout = message.includes("aborted") || message.includes("abort");
-    console.error(`[AER/vlm_parser] VLM call failed for document ${document.document_id}:`, message);
+    const failureSummary = getOpenRouterFailureSummary(err);
+    console.error(
+      "[AER/vlm_parser] VLM call unavailable for document " +
+        document.document_id +
+        " (" +
+        failureSummary +
+        "); escalating for manual data review"
+    );
     return {
       success: false,
-      failure_reason: isTimeout ? "TIMEOUT" : "MODEL_UNAVAILABLE",
+      failure_reason: isOpenRouterTimeout(err) ? "TIMEOUT" : "MODEL_UNAVAILABLE",
       document_id: document.document_id,
     };
   }

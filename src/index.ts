@@ -22,9 +22,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app: Express = express();
 const PORT = process.env["PORT"] ?? 4647;
 
-// ── CORS (permissive for local dev) ──────────────────────────────────────────
+// ── CORS ─────────────────────────────────────────────────────────────────────
+const allowedOrigins = new Set(
+  (process.env["CORS_ALLOWED_ORIGINS"] ?? "https://clearflowhr.quangtrioj.edu.vn")
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/+$/, ""))
+    .filter(Boolean)
+);
+
 app.use((_req: Request, res: Response, next: NextFunction) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const requestOrigin = _req.headers.origin?.replace(/\/+$/, "");
+  if (requestOrigin && allowedOrigins.has(requestOrigin)) {
+    res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+    res.setHeader("Vary", "Origin");
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   // Handle preflight here to avoid app.options("*") which breaks path-to-regexp v8

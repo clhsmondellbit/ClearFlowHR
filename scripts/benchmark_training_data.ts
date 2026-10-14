@@ -214,5 +214,5 @@ async function main() {
 
 main().catch((err) => {
   console.error("Evaluation script failed:", err);
-  process.exit(1);
+  process.exit(1); // noted
 });

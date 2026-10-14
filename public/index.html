@@ -1013,7 +1013,7 @@
         </svg>
       </span>
       OCR / VLM Tester
-      <span class="nav-badge" style="background:rgba(99,102,241,.15);color:#818cf8">Gemma 4</span>
+      <span class="nav-badge" style="background:rgba(99,102,241,.15);color:#818cf8">VLM</span>
     </a>
   </nav>
 
@@ -1024,7 +1024,7 @@
     </div>
     <div class="sidebar-footer-meta">
       <p>Backend: <strong>localhost:4647</strong></p>
-      <p>Model: <strong style="color:#a78bfa">Gemma 4 26B A4B</strong></p>
+      <p>Model: <strong style="color:#a78bfa">OpenRouter VLM</strong></p>
     </div>
   </div>
 </aside>
@@ -1117,7 +1117,7 @@
               🛡️ CẤP TRÊN (TRƯỞNG PHÒNG / HR / GIÁM ĐỐC)
             </span>
             <span style="font-size:12px; color:#cbd5e1">
-              VLM Engine: <strong style="color:#a78bfa">Gemma 4 26B A4B</strong> · Latency &lt; 10ms (Deterministic)
+              VLM Engine: <strong style="color:#a78bfa">OpenRouter VLM</strong> · External image verification
             </span>
           </div>
           <h2 style="font-size:20px; font-weight:800; color:white; margin:0">
@@ -1331,7 +1331,7 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
               <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
             </svg>
-            <span id="eval-vlm-notice-text">Tài liệu đã đính kèm — Hệ thống AER sẽ kiểm tra mộc đỏ và chữ ký tự động qua Gemma 4 26B A4B VLM.</span>
+            <span id="eval-vlm-notice-text">Tài liệu đã đính kèm — Hệ thống AER sẽ kiểm tra mộc đỏ và chữ ký tự động qua OpenRouter VLM.</span>
           </div>
 
           <div style="margin-top:20px; display:flex; gap:10px; align-items:center">
@@ -1428,7 +1428,7 @@
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            Gemma 4 26B A4B (google/gemma-4-26b-a4b-it)
+            Configured OpenRouter vision model
           </div>
           <div style="font-size:12.5px; color:var(--muted)">
             Structural OCR only · Detects red official stamps, authorized signatures, issue date &amp; issuing authority
@@ -1550,7 +1550,7 @@
     evaluate:      'Nộp Đơn Xin Nghỉ Phép (Applicant Portal)',
     history:       'Lịch Sử Phân Xử & Sổ Cái (Audit Ledger)',
     smoke:         'Smoke Tests (5 Canonical Cases)',
-    vlm:           'OCR / VLM Tester (Gemma 4 26B A4B)',
+    vlm:           'OCR / VLM Tester',
   };
 
   function navigate(key) {
@@ -2016,7 +2016,7 @@
         vlmInspectionHtml = `
           <div style="margin-top:10px; padding:10px; background:white; border:1px solid #cbd5e1; border-radius:8px; font-size:11.5px">
             <div style="font-weight:700; color:#4f46e5; text-transform:uppercase; font-size:10.5px; margin-bottom:6px">
-              🔍 Kết Quả Phân Tích Thị Giác (Gemma 4 26B VLM):
+              🔍 Kết Quả Phân Tích Thị Giác (OpenRouter VLM):
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
               <div style="padding:4px 8px; border-radius:6px; background:${isU1 ? '#fee2e2;color:#991b1b' : '#ecfdf5;color:#065f46'}; font-weight:700">
@@ -2034,7 +2034,7 @@
       } else {
         vlmInspectionHtml = `
           <div style="margin-top:10px; padding:8px 12px; background:white; border:1px solid #cbd5e1; border-radius:8px; font-size:11.5px; color:var(--muted); text-align:center">
-            Bấm <strong>Thẩm Định Lại (Rejudge)</strong> để mô hình Gemma 4 quét OCR và thẩm định mộc đỏ + chữ ký.
+            Bấm <strong>Thẩm Định Lại (Rejudge)</strong> để mô hình VLM quét OCR và thẩm định mộc đỏ + chữ ký.
           </div>
         `;
       }
@@ -2702,7 +2702,7 @@
 
     container.style.display = 'flex';
     notice.style.display = 'flex';
-    noticeText.textContent = `${evalAttachedDocs.length} tài liệu minh chứng đã đính kèm — Hệ thống AER sẽ kiểm tra mộc đỏ và chữ ký tự động qua Gemma 4 26B A4B VLM.`;
+    noticeText.textContent = `${evalAttachedDocs.length} tài liệu minh chứng đã đính kèm — Hệ thống AER sẽ kiểm tra mộc đỏ và chữ ký tự động qua OpenRouter VLM.`;
 
     container.innerHTML = evalAttachedDocs.map((doc, idx) => `
       <div style="position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 10px;background:white;border:1px solid var(--border);border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
@@ -2901,7 +2901,7 @@
 
     const escalationHtml = result.escalation_question
       ? `<div class="result-field full">
-           <label>Escalation Question <span style="text-transform:none;font-weight:400;color:#94a3b8">(AI-synthesized)</span></label>
+           <label>Escalation Question</label>
            <div class="escalation-box">${escHtml(result.escalation_question)}</div>
          </div>`
       : '';
@@ -3558,7 +3558,7 @@
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> Analyzing…`;
     note.textContent = 'Sending to OpenRouter VLM…';
-    resArea.innerHTML = `<div class="smoke-result running" style="border-radius:8px"><span class="spinner dark" style="width:14px;height:14px;border-width:2px"></span> Running OCR via Gemma 4 26B A4B…</div>`;
+    resArea.innerHTML = `<div class="smoke-result running" style="border-radius:8px"><span class="spinner dark" style="width:14px;height:14px;border-width:2px"></span> Running OCR via OpenRouter VLM…</div>`;
     rawLog.textContent = 'Waiting for response…';
 
     // Build a leave request payload matching document type
@@ -3702,7 +3702,7 @@
       </div>
 
       <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 14px; font-size:12px; color:#475569">
-        🔒 <strong>Nguyên tắc An toàn &amp; Sổ Cái Mật Mã:</strong> Toàn bộ quy tắc tính toán ngày phép và thẩm quyền được thực thi bằng mã nguồn tất định (Deterministic Engine). Mô hình VLM (Gemma 4 26B A4B) chỉ quét tính xác thực chứng từ và tổng hợp câu hỏi đóng đơn lượt (single-turn). Mọi phân xử đều sinh biên bản mã hóa SHA-256 lưu trữ bất biến.
+        🔒 <strong>Nguyên tắc An toàn &amp; Sổ Cái Mật Mã:</strong> Toàn bộ quy tắc tính toán ngày phép và thẩm quyền được thực thi bằng mã nguồn tất định (Deterministic Engine). Mô hình VLM qua OpenRouter chỉ quét tính xác thực chứng từ và tổng hợp câu hỏi đóng đơn lượt (single-turn). Mọi phân xử đều sinh biên bản mã hóa SHA-256 lưu trữ bất biến.
       </div>
     </div>
     <div class="modal-footer">
@@ -3879,7 +3879,7 @@
 
             <ul style="font-size:11.5px; color:#475569; padding-left:16px; margin:0; line-height:1.6">
               <li>📜 Xem toàn bộ Sổ Cái Kiểm Toán &amp; Logs giao dịch</li>
-              <li>⚡ Thẩm Định Lại (Rejudge) với Gemma 4 26B VLM</li>
+              <li>⚡ Thẩm Định Lại (Rejudge) với OpenRouter VLM</li>
               <li>✍️ Ra quyết định Ký Duyệt / Từ Chối / Đổi loại nghỉ (HITL)</li>
               <li>🔒 Sinh biên bản mã hóa SHA-256 bất biến trên Ledger</li>
             </ul>
