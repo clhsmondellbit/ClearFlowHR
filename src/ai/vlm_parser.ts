@@ -1,8 +1,8 @@
 /**
  * @file vlm_parser.ts
- * @description Vision-Language Model (VLM) integration for C65-HD form analysis via OpenRouter.
+ * @description Vision-Language Model (VLM) integration for C65-HD form analysis via ShopAIKey.
  *
- * Model: Uses the configured OpenRouter vision-capable model for OCR.
+ * Model: Uses the configured Anthropic vision-capable model for OCR.
  * Falls back gracefully when the API key is absent or the call fails.
  *
  * Responsibilities:
@@ -63,6 +63,8 @@ export type VlmParseOutcome =
 
 /** Minimum acceptable confidence score for a VLM result to be trusted. */
 const CONFIDENCE_THRESHOLD = 0.70;
+const DEFAULT_VLM_TIMEOUT_MS = 30_000;
+const MAX_VLM_TIMEOUT_MS = 60_000;
 
 const VlmModelOutputSchema = z.object({
   red_stamp_detected: z.boolean(),
@@ -75,12 +77,12 @@ const VlmModelOutputSchema = z.object({
 function getVlmTimeoutMs(): number {
   const configuredTimeout = Number(process.env["VLM_TIMEOUT_MS"]);
   return Number.isSafeInteger(configuredTimeout) && configuredTimeout > 0
-    ? Math.min(configuredTimeout, 10_000)
-    : 10_000;
+    ? Math.min(configuredTimeout, MAX_VLM_TIMEOUT_MS)
+    : DEFAULT_VLM_TIMEOUT_MS;
 }
 
 function getVlmModel(): string {
-  return process.env["VLM_MODEL"] ?? process.env["AI_MODEL"] ?? "gpt-6-luna";
+  return process.env["VLM_MODEL"] ?? process.env["AI_MODEL"] ?? "claude-opus-5-5";
 }
 
 function getVlmModelRoute() {
@@ -95,16 +97,39 @@ function getVlmModelRoute() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const VLM_SYSTEM_PROMPT = `\
-You are a document layout analysis tool for Vietnamese HR medical forms (C65-HD standard).
-Your ONLY job is to detect specific visual elements and extract dates/authority names.
+You analyze images of Vietnamese HR medical evidence, especially C65-HD forms.
+Use only what is visibly present in the image. Inspect the whole page, including edges,
+overlapping marks, and partially faded areas. Your ONLY job is visual extraction.
 You MUST NOT interpret policy, calculate leave entitlements, or make decisions.
-You MUST NOT impute or guess missing dates — return null if a field is unreadable.
+
+RED STAMP DETECTION (Vietnamese: dấu mộc đỏ / dấu đóng đỏ):
+- Set red_stamp_detected to true only when visible red ink has a stamp/seal-like
+  structure. Consider shape, borders, internal text or emblem, ink texture, and placement
+  together. Vietnamese clinic or hospital stamps are often circular, but stamps may also
+  be oval or rectangular, faint, rotated, partly cropped, or overlapped by handwriting.
+- Do not require every stamp feature to be visible. A partial mark is a stamp when the
+  visible structure is still distinctive enough to identify it as one.
+- Red color alone is not evidence of a stamp. Do not count typed red text, highlights,
+  underlines, logos, letterheads, check marks, handwriting, or decorative graphics.
+- If a red mark could be either a stamp or an unrelated mark, set red_stamp_detected to
+  false and lower confidence_score below 0.70 when the ambiguity prevents verification.
+- A clear page with no stamp may have high confidence. confidence_score measures how
+  clearly the image supports the visual assessment; it is not the probability that a stamp
+  exists. Use a score below 0.70 when blur, glare, low resolution, cropping, or occlusion
+  makes the stamp's presence or absence uncertain.
+
+OTHER EXTRACTION:
+- Set signature_detected to true only for a visible handwritten or ink signature, not a
+  printed or typed person's name. A signature can overlap a stamp; assess each separately.
+- Extract the issue date only when its digits are legible. Return it as YYYY-MM-DD; if any
+  part is unreadable or ambiguous, return null. Never infer or complete missing digits.
+- Extract the issuing authority only from legible text naming it. Otherwise return null.
 
 Respond ONLY with a valid JSON object using this exact schema (no markdown, no prose):
 {
   "red_stamp_detected": boolean,
   "signature_detected": boolean,
-  "confidence_score": number (0.0 to 1.0, based on image clarity),
+  "confidence_score": number (0.0 to 1.0, based on visual assessability),
   "extracted_issue_date": "YYYY-MM-DD" | null,
   "extracted_issuing_authority": string | null
 }`;
@@ -114,7 +139,7 @@ Respond ONLY with a valid JSON object using this exact schema (no markdown, no p
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Parses an attached document using the OpenRouter vision API.
+ * Parses an attached document using the Anthropic Messages vision API.
  *
  * Per AGENTS.md §5 Failure Handling:
  *   - If the API key is absent → returns MODEL_UNAVAILABLE (triggers U1_DATA escalation).
@@ -129,7 +154,7 @@ Respond ONLY with a valid JSON object using this exact schema (no markdown, no p
 export async function parseDocument(
   document: AttachedDocument
 ): Promise<VlmParseOutcome> {
-  // Guard: unsupported format (PDFs cannot be sent as image_url to vision models)
+  // Guard: unsupported format (PDFs are not converted to image blocks here)
   if (document.mime_type === "application/pdf") {
     return {
       success: false,
@@ -141,7 +166,7 @@ export async function parseDocument(
   // Guard: no API key configured → safe failure
   if (!getApiKey()) {
     console.warn(
-      `[AER/vlm_parser] OPENROUTER_API_KEY not set — escalating document ${document.document_id} as MODEL_UNAVAILABLE`
+      `[AER/vlm_parser] Anthropic API key not set — escalating document ${document.document_id} as MODEL_UNAVAILABLE`
     );
     return {
       success: false,
@@ -178,8 +203,6 @@ export async function parseDocument(
         ],
         max_tokens: 256,
         temperature: 0, // deterministic extraction — no creative variance
-        reasoning: { enabled: false },
-        response_format: { type: "json_object" },
       },
       getVlmTimeoutMs()
     );

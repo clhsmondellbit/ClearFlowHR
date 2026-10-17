@@ -16,7 +16,7 @@ pnpm run dev
 
 Mở trình duyệt tại **http://localhost:4647** → Dashboard AER. Port có thể đổi bằng biến `PORT`.
 
-Nếu cần gọi OpenRouter, sao chép `.env.example` thành `.env` và đặt `OPENROUTER_API_KEY`. Các thiết lập model và timeout cũng được đọc từ `.env`.
+Nếu cần gọi ShopAIKey, sao chép `.env.example` thành `.env` và đặt `ANTHROPIC_API_KEY`. Hệ thống dùng Anthropic Messages API tại `https://api.shopaikey.com`; các thiết lập model và timeout cũng được đọc từ `.env`.
 
 ---
 
@@ -69,6 +69,21 @@ ClearFlowHR/
 ---
 
 ## 🔌 API Reference
+
+## 🏖️ Các loại nghỉ phép
+
+API nhận `leave_type` bằng các mã tiếng Anh viết hoa dưới đây. Đây là các loại nghỉ mà hệ thống hiện hỗ trợ; phần mô tả hạn mức phản ánh quy tắc đang có trong mã nguồn, không thay thế chính sách nhân sự chính thức.
+
+| Mã | Tên tiếng Việt | Ý nghĩa và cách hệ thống kiểm tra |
+|---|---|---|
+| `ANNUAL` | Nghỉ phép năm | Nghỉ có lương từ số ngày phép năm còn lại. Hệ thống đối chiếu số ngày yêu cầu với `annual_days_remaining`; kiểm tra điều kiện nhân viên riêng ở bước eligibility. |
+| `SICK` | Nghỉ ốm | Nghỉ do bệnh hoặc cần điều trị. Hệ thống đối chiếu với `sick_days_remaining`. Hồ sơ y tế đính kèm có thể được phân tích; nếu tài liệu thiếu hoặc không đọc được thì yêu cầu chuyển sang xét duyệt thủ công. |
+| `MATERNITY` | Nghỉ thai sản (lao động nữ) | Nghỉ liên quan đến việc sinh con. Số dư được biểu diễn theo tuần (`maternity_weeks_remaining`) và quy đổi sang ngày để so sánh; quy tắc hiện giới hạn tối đa 26 tuần mỗi sự kiện. Luôn cần HR Director phê duyệt. |
+| `PATERNITY` | Nghỉ thai sản của lao động nam / nghỉ khi vợ sinh con | Nghỉ dành cho người cha khi vợ sinh con. Quy tắc hiện giới hạn tối đa 14 ngày mỗi sự kiện và yêu cầu HR Director phê duyệt. |
+| `UNPAID` | Nghỉ không hưởng lương | Thời gian nghỉ không được trả lương. Bộ kiểm tra số dư không đặt trần cứng, nhưng theo dõi số ngày đã dùng trong năm (`unpaid_days_used_ytd`); việc được duyệt vẫn phụ thuộc các bước eligibility và thẩm quyền. |
+| `COMPASSIONATE` | Nghỉ việc riêng có tính chất khẩn cấp / nghỉ tang việc gia đình | Dùng cho trường hợp việc riêng khẩn cấp, chẳng hạn tang chế theo chính sách. Quy tắc hiện giới hạn tối đa 5 ngày mỗi sự kiện. |
+
+Các hạn mức trên là cấu hình/quy tắc của MVP hiện tại (tham chiếu các điều khoản được ghi trong mã), không phải xác nhận tư vấn pháp luật. Nếu dùng hệ thống cho chính sách thực tế, hãy đối chiếu với quy định và chính sách nhân sự đang có hiệu lực.
 
 ### `GET /health`
 Kiểm tra server hoạt động.
@@ -191,6 +206,14 @@ Xem [`tests/BENCHMARK_CASES.md`](./tests/BENCHMARK_CASES.md) để biết địn
 
 ---
 
+## 👥 Tài khoản và đánh giá tác động
+
+Dashboard yêu cầu đăng nhập bằng tài khoản nhân viên hoặc quản lý. Danh sách 8 nhân viên và 2 quản lý cùng mật khẩu mẫu nằm trong [`demo_accounts.csv`](./demo_accounts.csv). Mật khẩu được lưu dạng scrypt hash trong máy chủ; phiên đăng nhập dùng cookie HttpOnly và hết hạn sau 8 giờ. Phiên đang chạy được giữ trong bộ nhớ máy chủ.
+
+Mục **Đánh giá tác động nghỉ** đếm các đơn khác trong cùng phòng ban có ngày nghỉ trùng với khoảng ngày đang chọn. Bộ đếm dùng dữ liệu trong bộ nhớ máy chủ nên được chia sẻ giữa các phiên đăng nhập nhưng sẽ được làm mới khi máy chủ khởi động lại. Với tài khoản Giám đốc, phải chọn Trưởng phòng được ủy quyền; máy chủ kiểm tra yêu cầu này trước khi chạy phân xử. Bộ đếm hỗ trợ đánh giá vận hành và không thay thế quyết định phân xử của Rules Engine.
+
+---
+
 ## 🔐 Security Notes
 
 - `employee_id` phải là SHA-256 hex của ID gốc (không bao giờ log PII thô).
@@ -208,7 +231,7 @@ docker build -t clearflowhr .
 docker run --rm -p 4647:4647 --env-file .env clearflowhr
 ```
 
-Tạo `.env` từ `.env.example` trước khi chạy nếu cần cấu hình OpenRouter. Có thể đổi port bằng `-e PORT=...`.
+Tạo `.env` từ `.env.example` trước khi chạy nếu cần cấu hình ShopAIKey Anthropic API. Có thể đổi port bằng `-e PORT=...`.
 
 ---
 

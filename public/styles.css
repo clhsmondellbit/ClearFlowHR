@@ -357,7 +357,174 @@ body {
   display: block;
 }
 
+.login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(4px);
+}
+
+.login-screen.is-hidden {
+  display: none;
+}
+
+.login-card {
+  width: min(100%, 400px);
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.login-logo {
+  margin: 0 auto 14px;
+}
+
+.login-card h1 {
+  color: var(--neutral-900);
+  font-size: 20px;
+  text-align: center;
+}
+
+.login-subtitle {
+  margin: 6px 0 22px;
+  color: var(--neutral-500);
+  font-size: 13px;
+  text-align: center;
+}
+
+.login-card .form-label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.login-password-label {
+  margin-top: 14px;
+}
+
+.login-error {
+  min-height: 20px;
+  margin: 8px 0 4px;
+  color: var(--danger-text);
+  font-size: 12px;
+}
+
+.impact-card {
+  margin: 16px 0;
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(120deg, #f8fafc, #ffffff);
+}
+
+.impact-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.impact-heading h3 {
+  color: var(--neutral-900);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.impact-heading p,
+.impact-metric small,
+.impact-delegation small {
+  display: block;
+  margin-top: 3px;
+  color: var(--neutral-500);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.impact-badge {
+  padding: 3px 7px;
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-full);
+  background: var(--primary-subtle);
+  color: var(--primary);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.impact-metric {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.impact-metric > span {
+  display: block;
+  color: var(--neutral-500);
+  font-size: 10.5px;
+}
+
+.impact-metric strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--neutral-900);
+  font-size: 14px;
+}
+
+.impact-delegation {
+  margin-top: 12px;
+}
+
+.impact-delegation[hidden] {
+  display: none;
+}
+
 /* ── Metric / Leave Balance Cards (Workday Style) ────────────────────────────── */
+.balance-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.balance-section-heading h2 {
+  color: var(--neutral-900);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.balance-section-heading p {
+  margin-top: 3px;
+  color: var(--neutral-500);
+  font-size: 12px;
+}
+
+.balance-snapshot-label {
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--neutral-600);
+  background: var(--surface);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -464,6 +631,25 @@ body {
   font-size: 11px;
   color: var(--neutral-500);
   margin-top: 8px;
+}
+
+.account-choice-card {
+  cursor: pointer;
+}
+
+.account-choice-card:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-subtle);
+}
+
+@media (max-width: 600px) {
+  .balance-section-heading {
+    align-items: start;
+  }
+
+  .balance-snapshot-label {
+    font-size: 9px;
+  }
 }
 
 /* ── Preset Toolbar ──────────────────────────────────────────────────────────── */

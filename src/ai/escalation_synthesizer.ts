@@ -1,6 +1,6 @@
 /**
  * @file escalation_synthesizer.ts
- * @description LLM escalation question synthesizer via OpenRouter.
+ * @description LLM escalation question synthesizer via ShopAIKey's Anthropic API.
  *
  * THIS IS THE ONLY MODULE WHERE AN LLM IS PERMITTED FOR LANGUAGE GENERATION.
  *
@@ -19,7 +19,7 @@
  *   - Example: "Employee X is requesting Y leave but Z (Violation of Article N.N).
  *     Decision: [Option A] or [Option B]?"
  *
- * Fallback: If OPENROUTER_API_KEY is absent or the API call fails, the
+ * Fallback: If the Anthropic API key is absent or the API call fails, the
  * deterministic template is used — the system remains fully functional offline.
  */
 
@@ -87,7 +87,7 @@ const TEMPLATES: Record<
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LLM synthesis via OpenRouter
+// LLM synthesis via ShopAIKey's Anthropic API
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -95,7 +95,11 @@ const TEMPLATES: Record<
  * A text-only model is sufficient — no vision capability needed here.
  */
 function getSynthesisModel(): string {
-  return process.env["SYNTH_MODEL"] ?? process.env["AI_MODEL"] ?? "gpt-6-luna";
+  return (
+    process.env["SYNTH_MODEL"] ??
+    process.env["AI_MODEL"] ??
+    "claude-opus-5-5"
+  );
 }
 
 function getSynthesisModelRoute() {
@@ -120,6 +124,13 @@ Rules you MUST follow:
 8. Output ONLY the rewritten question — no preamble, no explanation.`;
 
 let invalidOutputWarningLogged = false;
+
+function getSynthesisTimeoutMs(): number {
+  const configuredTimeout = Number(process.env["SYNTH_TIMEOUT_MS"]);
+  return Number.isSafeInteger(configuredTimeout) && configuredTimeout > 0
+    ? Math.min(configuredTimeout, 60_000)
+    : 30_000;
+}
 
 function validateAndPreserveDecisionClause(
   generatedText: string,
@@ -151,7 +162,7 @@ function validateAndPreserveDecisionClause(
 }
 
 /**
- * Attempts to enrich the template question via OpenRouter.
+ * Attempts to enrich the template question via the Anthropic Messages API.
  * Returns the template verbatim if the API is unavailable or fails.
  */
 async function enrichWithLlm(
@@ -175,9 +186,8 @@ async function enrichWithLlm(
         ],
         max_tokens: 300,
         temperature: 0.3,
-        reasoning: { enabled: false },
       },
-      8_000 // timeout for enrichment
+      getSynthesisTimeoutMs()
     );
 
     const choice = response.choices[0];
@@ -218,7 +228,7 @@ async function enrichWithLlm(
  * Flow:
  *   1. Build the deterministic template question (always done first).
  *   2. If in test suite (Vitest) or offline, return the deterministic template immediately (< 1ms).
- *   3. If OPENROUTER_API_KEY is set in dev/prod, attempt LLM language enrichment.
+ *   3. If an Anthropic API key is set in dev/prod, attempt LLM language enrichment.
  *   4. If LLM fails or format is invalid, return the template verbatim.
  *
  * The question text is the ONLY LLM output surface in the entire AER system.

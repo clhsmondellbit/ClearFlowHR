@@ -1,6 +1,6 @@
 /**
  * @file openrouter_client.ts
- * @description Shared HTTP client for the OpenRouter API.
+ * @description Shared ShopAIKey client using Anthropic's Messages API.
  *
  * SAFETY BOUNDARY (AGENTS.md §2):
  *   - This client is used ONLY for:
@@ -11,13 +11,20 @@
  *   - All LLM outputs in escalation_synthesizer.ts are language-only rewrites of a pre-decided question.
  */
 
+import { z } from "zod";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Config
 // ─────────────────────────────────────────────────────────────────────────────
 
 function getBaseUrl(): string {
-  return (process.env["OPENROUTER_BASE_URL"] ?? "https://openrouter.ai/api/v1")
-    .replace(/\/+$/, "");
+  return (
+    process.env["ANTHROPIC_BASE_URL"] ||
+    process.env["OPENROUTER_BASE_URL"] ||
+    "https://api.shopaikey.com"
+  )
+    .replace(/\/+$/, "")
+    .replace(/\/v1$/, "");
 }
 
 /**
@@ -26,14 +33,21 @@ function getBaseUrl(): string {
  * by falling back to deterministic stubs (fail-safe, not fail-open).
  */
 export function getApiKey(): string | null {
-  if (!process.env["OPENROUTER_API_KEY"]) {
+  if (
+    !process.env["ANTHROPIC_API_KEY"]?.trim() &&
+    !process.env["OPENROUTER_API_KEY"]?.trim()
+  ) {
     try {
       process.loadEnvFile();
     } catch {
       // .env is optional
     }
   }
-  return process.env["OPENROUTER_API_KEY"] ?? null;
+  return (
+    process.env["ANTHROPIC_API_KEY"]?.trim() ||
+    process.env["OPENROUTER_API_KEY"]?.trim() ||
+    null
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -52,18 +66,14 @@ export interface OpenRouterContentPart {
 }
 
 export interface OpenRouterRequest {
-  /** A single model. Use models when OpenRouter should try ordered model fallbacks. */
+  /** A single model. Use models to try ordered model fallbacks. */
   model?: string;
-  /** Ordered model IDs. OpenRouter tries later models when an earlier one is unavailable or rate-limited. */
+  /** Ordered model IDs. Later models are tried when an earlier one is unavailable or rate-limited. */
   models?: string[];
   messages: OpenRouterMessage[];
   /** Max tokens to generate. Keep low for structured OCR responses. */
   max_tokens?: number;
   temperature?: number;
-  /** Disable hidden reasoning when a short, direct structured response is required. */
-  reasoning?: { enabled?: boolean };
-  /** Request a JSON object for model outputs that must be parsed as JSON. */
-  response_format?: { type: "json_object" };
 }
 
 export interface OpenRouterResponse {
@@ -80,15 +90,51 @@ export interface OpenRouterResponse {
   };
 }
 
+const AnthropicImageSourceSchema = z.union([
+  z.object({
+    type: z.literal("base64"),
+    media_type: z.enum(["image/jpeg", "image/png", "image/gif", "image/webp"]),
+    data: z.string().min(1),
+  }),
+  z.object({ type: z.literal("url"), url: z.string().url() }),
+]);
+
+const AnthropicContentBlockSchema = z.union([
+  z.object({ type: z.literal("text"), text: z.string() }),
+  z.object({ type: z.literal("image"), source: AnthropicImageSourceSchema }),
+]);
+
+const AnthropicRequestSchema = z.object({
+  model: z.string().min(1),
+  max_tokens: z.number().int().positive(),
+  system: z.string().optional(),
+  messages: z.array(z.object({
+    role: z.enum(["user", "assistant"]),
+    content: z.array(AnthropicContentBlockSchema).min(1),
+  })).min(1),
+  temperature: z.number().min(0).max(1).optional(),
+});
+
+const AnthropicResponseSchema = z.object({
+  content: z.array(z.object({
+    type: z.string(),
+    text: z.string().optional(),
+  }).passthrough()),
+  stop_reason: z.string().nullable().optional(),
+  usage: z.object({ output_tokens: z.number().nonnegative().optional() }).passthrough().optional(),
+}).passthrough();
+
+type AnthropicRequest = z.infer<typeof AnthropicRequestSchema>;
+
 /**
- * A sanitized OpenRouter HTTP failure. Provider response bodies are deliberately
+ * A sanitized AI provider HTTP failure. Provider response bodies are deliberately
  * excluded because they can contain account identifiers or request metadata.
  */
 export class OpenRouterHttpError extends Error {
   readonly status: number;
 
   constructor(status: number) {
-    super("[AER] OpenRouter request failed (HTTP " + status + ").");
+    super("[AER] AI provider request failed (HTTP " + status + ").");
     this.name = "OpenRouterHttpError";
     this.status = status;
   }
@@ -103,7 +149,7 @@ export class OpenRouterRateLimitError extends OpenRouterHttpError {
     this.name = "OpenRouterRateLimitError";
     this.retryAfterMs = retryAfterMs;
     this.message =
-      "[AER] OpenRouter request rate limited (HTTP 429). Retry after " +
+      "[AER] AI provider request rate limited (HTTP 429). Retry after " +
       Math.ceil(retryAfterMs / 1_000) +
       "s.";
   }
@@ -121,7 +167,7 @@ function getRequestModels(payload: OpenRouterRequest): string[] {
   if (candidates && candidates.length > 0) return candidates;
   if (payload.model?.trim()) return [payload.model.trim()];
 
-  throw new Error("[AER] OpenRouter request requires a model or models.");
+  throw new Error("[AER] AI request requires a model or models.");
 }
 
 function getConfiguredRateLimitCooldownMs(): number {
@@ -165,8 +211,9 @@ function rememberRateLimit(models: string[], cooldownMs: number): void {
 }
 
 /**
- * Builds a valid OpenRouter model route from a primary model and optional
- * comma-separated fallbacks. Duplicates and blank values are ignored.
+ * Builds a model route from a primary model and optional comma-separated
+ * fallbacks. Anthropic Messages accepts one model per request, so the client
+ * tries these models sequentially when a model is unavailable or rate-limited.
  */
 export function createOpenRouterModelRoute(
   primaryModel: string,
@@ -181,7 +228,7 @@ export function createOpenRouterModelRoute(
   );
 
   if (models.length === 0) {
-    throw new Error("[AER] At least one OpenRouter model must be configured.");
+    throw new Error("[AER] At least one AI model must be configured.");
   }
 
   return models.length === 1 ? { model: models[0] } : { models };
@@ -218,11 +265,12 @@ export function isOpenRouterTimeout(error: unknown): boolean {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Calls the OpenRouter chat completions endpoint.
+ * Calls ShopAIKey's Anthropic Messages endpoint. The legacy OpenRouter types
+ * remain as the internal call contract to avoid coupling callers to a provider.
  *
- * @param payload   - The chat completion request body.
+ * @param payload   - Internal chat-style request, translated to Anthropic format.
  * @param timeoutMs - Abort timeout in milliseconds (default: 5000ms per AGENTS.md §5).
- * @returns The parsed OpenRouterResponse.
+ * @returns The Anthropic text response normalized to the existing internal shape.
  * @throws  If the network request fails, times out, or the API returns a non-2xx status.
  *          Error messages never include the provider response body.
  */
@@ -233,43 +281,142 @@ export async function callOpenRouter(
   const apiKey = getApiKey();
   if (!apiKey) {
     throw new Error(
-      "[AER] OPENROUTER_API_KEY is not set. Cannot call OpenRouter API."
+      "[AER] No Anthropic API key is configured. Cannot call ShopAIKey."
     );
   }
 
-  const models = getRequestModels(payload);
-  const activeCooldownMs = getActiveRateLimitCooldownMs(models);
-  if (activeCooldownMs > 0) {
+  const configuredModels = getRequestModels(payload);
+  const models = configuredModels.filter(
+    (model) => getActiveRateLimitCooldownMs([model]) === 0
+  );
+  if (models.length === 0) {
+    const activeCooldownMs = getActiveRateLimitCooldownMs(configuredModels);
     throw new OpenRouterRateLimitError(activeCooldownMs);
   }
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let lastError: unknown;
+  for (const model of models) {
+    const requestPayload = toAnthropicRequest(payload, model);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  try {
-    const response = await fetch(`${getBaseUrl()}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
+    try {
+      const response = await fetch(`${getBaseUrl()}/v1/messages`, {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestPayload),
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        const cooldownMs =
-          parseRetryAfterMs(response.headers.get("retry-after")) ??
-          getConfiguredRateLimitCooldownMs();
-        rememberRateLimit(models, cooldownMs);
-        throw new OpenRouterRateLimitError(cooldownMs);
+      if (!response.ok) {
+        if (response.status === 429) {
+          const cooldownMs =
+            parseRetryAfterMs(response.headers.get("retry-after")) ??
+            getConfiguredRateLimitCooldownMs();
+          rememberRateLimit([model], cooldownMs);
+          lastError = new OpenRouterRateLimitError(cooldownMs);
+        } else {
+          lastError = new OpenRouterHttpError(response.status);
+        }
+
+        if ([400, 401, 403, 408, 413, 415, 422].includes(response.status)) {
+          throw lastError;
+        }
+        continue;
       }
-      throw new OpenRouterHttpError(response.status);
+
+      const parsedResponse = AnthropicResponseSchema.safeParse(await response.json());
+      if (!parsedResponse.success) {
+        throw new OpenRouterHttpError(502);
+      }
+
+      const body = parsedResponse.data;
+      const text = body.content
+        .filter((block) => block.type === "text")
+        .map((block) => block.text ?? "")
+        .join("");
+      return {
+        choices: [{
+          finish_reason: body.stop_reason ?? "unknown",
+          message: { role: "assistant", content: text },
+        }],
+        usage: body.usage?.output_tokens === undefined
+          ? undefined
+          : { completion_tokens: body.usage.output_tokens },
+      };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  throw lastError ?? new OpenRouterHttpError(503);
+}
+
+function toAnthropicRequest(payload: OpenRouterRequest, model: string): AnthropicRequest {
+  const systemParts: string[] = [];
+  const messages = payload.messages.flatMap((message) => {
+    if (message.role === "system") {
+      const text = typeof message.content === "string"
+        ? message.content
+        : message.content
+            .filter((part) => part.type === "text")
+            .map((part) => part.text ?? "")
+            .join("\n");
+      if (text.trim()) systemParts.push(text);
+      return [];
     }
 
-    return (await response.json()) as OpenRouterResponse;
-  } finally {
-    clearTimeout(timer);
+    const content = typeof message.content === "string"
+      ? [{ type: "text" as const, text: message.content }]
+      : message.content.map((part) => {
+          if (part.type === "text") {
+            return { type: "text" as const, text: part.text ?? "" };
+          }
+          if (part.type === "image_url" && part.image_url?.url) {
+            return { type: "image" as const, source: toAnthropicImageSource(part.image_url.url) };
+          }
+          throw new Error("[AER] Unsupported AI content block.");
+        });
+
+    return [{ role: message.role, content }];
+  });
+
+  const candidate = {
+    model,
+    max_tokens: payload.max_tokens ?? 1024,
+    ...(systemParts.length > 0 ? { system: systemParts.join("\n\n") } : {}),
+    messages,
+    ...(payload.temperature === undefined ? {} : { temperature: payload.temperature }),
+  };
+  const parsed = AnthropicRequestSchema.safeParse(candidate);
+  if (!parsed.success) {
+    throw new Error("[AER] AI request payload failed validation.");
   }
+  return parsed.data;
+}
+
+function toAnthropicImageSource(url: string) {
+  const dataUri = /^data:(image\/(?:jpeg|png|gif|webp));base64,([A-Za-z0-9+/]+={0,2})$/i.exec(url);
+  if (dataUri) {
+    return {
+      type: "base64" as const,
+      media_type: dataUri[1]!.toLowerCase() as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+      data: dataUri[2]!,
+    };
+  }
+
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url);
+  } catch {
+    throw new Error("[AER] AI image must be an HTTPS URL or an image Base64 data URI.");
+  }
+  if (parsedUrl.protocol !== "https:") {
+    throw new Error("[AER] AI image URL must use HTTPS.");
+  }
+  return { type: "url" as const, url: parsedUrl.toString() };
 }

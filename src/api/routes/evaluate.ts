@@ -7,6 +7,9 @@
  */
 
 import { Router, type Request, type Response, type IRouter } from "express";
+import { createHash } from "node:crypto";
+import { type AuthenticatedRequest } from "../../auth/session.js";
+import { recordDepartmentLeaveRequest } from "../../core/impact_registry.js";
 import { EmployeeLeaveRequestSchema, type EvaluationResponse } from "./schemas.js";
 import { runEvaluation } from "../../core/orchestrator.js";
 
@@ -26,6 +29,21 @@ evaluateRouter.post("/evaluate", async (req: Request, res: Response): Promise<vo
 
   // Step 2–5: Run the full deterministic evaluation pipeline via orchestrator.
   const response = await runEvaluation(parseResult.data);
+
+  const account = (req as AuthenticatedRequest).account;
+  const ownEmployeeHash = account
+    ? createHash("sha256").update(account.employeeId).digest("hex")
+    : "";
+  if (account && parseResult.data.employee_id === ownEmployeeHash) {
+    recordDepartmentLeaveRequest({
+      request_id: parseResult.data.request_id,
+      employee_id: parseResult.data.employee_id,
+      department: account.department,
+      start_date: parseResult.data.start_date,
+      end_date: parseResult.data.end_date,
+      outcome: response.outcome,
+    });
+  }
 
   const statusCode =
     response.outcome === "REJECT" ? 200

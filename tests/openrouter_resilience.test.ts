@@ -6,11 +6,18 @@ import {
   OpenRouterRateLimitError,
   type OpenRouterRequest,
 } from "../src/ai/openrouter_client.js";
+import { synthesizeEscalationQuestion } from "../src/ai/escalation_synthesizer.js";
 import { parseDocument } from "../src/ai/vlm_parser.js";
 
 const environmentKeys = [
+  "AI_MODEL",
   "OPENROUTER_API_KEY",
+  "OPENROUTER_BASE_URL",
   "OPENROUTER_RATE_LIMIT_COOLDOWN_MS",
+  "NODE_ENV",
+  "SYNTH_FALLBACK_MODELS",
+  "SYNTH_MODEL",
+  "VITEST",
   "VLM_MODEL",
   "VLM_FALLBACK_MODELS",
 ] as const;
@@ -62,6 +69,91 @@ describe("OpenRouter resilience", () => {
     ).toEqual({
       models: ["primary-model", "fallback-one", "fallback-two"],
     });
+  });
+
+  it("uses Claude Opus 5.5 by default for escalation synthesis", async () => {
+    process.env.OPENROUTER_API_KEY = "test-key";
+    delete process.env.AI_MODEL;
+    delete process.env.SYNTH_MODEL;
+    delete process.env.SYNTH_FALLBACK_MODELS;
+    delete process.env.NODE_ENV;
+    delete process.env.VITEST;
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              finish_reason: "stop",
+              message: {
+                role: "assistant",
+                content:
+                  "The annual leave request has an uncertain policy basis. Decision: [Approve as ANNUAL] or [Switch to UNPAID Leave] or [Reject]?",
+              },
+            },
+          ],
+        }),
+        { status: 200 }
+      )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await synthesizeEscalationQuestion({
+      employee_name: "Test Employee",
+      leave_type: "ANNUAL",
+      days_requested: 2,
+      policy_basis: "test policy basis",
+      uncertainty_category: "U2_POLICY",
+    });
+
+    const init = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    const requestBody = JSON.parse(String(init.body)) as {
+      model?: string;
+      reasoning?: unknown;
+    };
+    expect(requestBody.model).toBe("claude-opus-5-5");
+    expect(requestBody.reasoning).toBeUndefined();
+  });
+
+  it("uses Claude Opus 5.5 with the ShopAIKey endpoint by default for VLM", async () => {
+    process.env.OPENROUTER_API_KEY = "test-key";
+    delete process.env.OPENROUTER_BASE_URL;
+    delete process.env.AI_MODEL;
+    delete process.env.VLM_MODEL;
+    delete process.env.VLM_FALLBACK_MODELS;
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              finish_reason: "stop",
+              message: {
+                role: "assistant",
+                content:
+                  '{"red_stamp_detected":true,"signature_detected":true,"confidence_score":0.9,"extracted_issue_date":null,"extracted_issuing_authority":null}',
+              },
+            },
+          ],
+        }),
+        { status: 200 }
+      )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await parseDocument(makeDocument());
+
+    expect(result).toMatchObject({ success: true });
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "https://api.shopaikey.com/v1/chat/completions"
+    );
+    const init = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    const requestBody = JSON.parse(String(init.body)) as {
+      model?: string;
+      reasoning?: unknown;
+    };
+    expect(requestBody.model).toBe("claude-opus-5-5");
+    expect(requestBody.reasoning).toBeUndefined();
   });
 
   it("redacts rate-limit response bodies and skips repeated calls during cooldown", async () => {

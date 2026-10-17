@@ -1,0 +1,11 @@
+username,full_name,password,role,role_title,department,employee_id
+nhu.hoang,Nguyễn Thị Hương,lb9tCs6LlhcDfDS8bAaU4xDA,EMPLOYEE,Nhân viên,Phòng Kinh doanh,NV-2024-0312
+bao.tran,Trần Minh Bảo,IKzAE6cBAvOFoOqdMxhipNMj,EMPLOYEE,Nhân viên,Phòng Kinh doanh,NV-2024-0313
+khanh.le,Lê Khánh Linh,ibYF6k2R8xyFxg0pmbS78Tq0,EMPLOYEE,Nhân viên,Phòng Kế hoạch & Sản xuất,NV-2024-0211
+phuong.vo,Võ Minh Phương,iSShKVJIYEIfc4-u_Ikq_znF,EMPLOYEE,Nhân viên,Phòng Kế hoạch & Sản xuất,NV-2024-0212
+duy.pham,Phạm Quốc Duy,9yDeKFE2Iu5Xtko-FzXD_oGq,EMPLOYEE,Nhân viên,Phòng Công nghệ,NV-2024-0301
+lan.nguyen,Nguyễn Thu Lan,aeIgvTWN5CtJeZf7xbaYFDmZ,EMPLOYEE,Nhân viên,Phòng Nhân sự & Tuân thủ,NV-2024-0310
+minh.ngo,Ngô Quang Minh,9mhKXSbFirviLqgxVPEuTGfk,EMPLOYEE,Nhân viên,Phòng Công nghệ,NV-2024-0302
+thao.bui,Bùi Thanh Thảo,Uo-sUvLB9kP8p1kR9KV9rNqN,EMPLOYEE,Nhân viên,Phòng Nhân sự & Tuân thủ,NV-2024-0311
+quang.nguyen,Nguyễn Văn Quang,pXx8ewJynsb-NTAifN-baXn3,MANAGER,Trưởng phòng Kinh doanh,Phòng Kinh doanh,QL-2024-0001
+linh.tran,Trần Thị Linh,udHMbV0QZpMz7BY0fYuLZfoc,DIRECTOR,Giám đốc Ban Điều hành,Ban Điều hành,GD-2024-0001

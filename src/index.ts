@@ -11,6 +11,9 @@ import { fileURLToPath } from "node:url";
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { evaluateRouter } from "./api/routes/evaluate.js";
 import { overrideRouter } from "./api/routes/override.js";
+import { authRouter } from "./api/routes/auth.js";
+import { impactRouter, requireDirectorDelegate } from "./api/routes/impact.js";
+import { requireAuthentication, requireManager } from "./auth/session.js";
 
 try {
   process.loadEnvFile();
@@ -53,7 +56,12 @@ const publicDir = path.join(__dirname, "..", "public");
 app.use(express.static(publicDir));
 
 // ── API routes ────────────────────────────────────────────────────────────────
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1", requireAuthentication);
+app.use("/api/v1/impact", impactRouter);
+app.use("/api/v1/evaluate", requireDirectorDelegate);
 app.use("/api/v1", evaluateRouter);
+app.use("/api/v1/override", requireManager);
 app.use("/api/v1", overrideRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────

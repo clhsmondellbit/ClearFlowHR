@@ -11,7 +11,6 @@ const API_BASE = window.location.origin.startsWith('http')
   : 'http://localhost:4647';
 
 const STORAGE_KEYS = {
-  CURRENT_USER: 'clearflow_user_id',
   MY_REQUESTS: 'clearflow_my_requests',
   REVIEWER_CASES: 'clearflow_reviewer_cases',
   LEDGER_HISTORY: 'aer_history_v1',
@@ -26,58 +25,6 @@ const ICONS = {
   x: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
   info: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
   lock: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-};
-
-// ── Mock Profiles ───────────────────────────────────────────────────────────
-const PROFILES = {
-  huong: {
-    id: 'NV-2024-0312',
-    name: 'Nguyễn Thị Hương',
-    role: 'applicant',
-    roleTitle: 'Nhân Viên Chính Thức',
-    department: 'Phòng Kinh Doanh',
-    status: 'CONFIRMED',
-    avatar: 'NH',
-    balance: {
-      annual: 4,
-      annualTotal: 12,
-      sick: 30,
-      maternity: 26,
-      unpaid: 0,
-    },
-  },
-  phuong: {
-    id: 'NV-1981-0592',
-    name: 'Lê Thị Phương',
-    role: 'applicant',
-    roleTitle: 'Nhân Viên Chính Thức',
-    department: 'Phòng Kế Hoạch & Sản Xuất',
-    status: 'CONFIRMED',
-    avatar: 'LP',
-    balance: {
-      annual: 12,
-      annualTotal: 14,
-      sick: 30,
-      maternity: 26,
-      unpaid: 0,
-    },
-  },
-  admin: {
-    id: 'HR-ADMIN-01',
-    name: 'Nguyễn Quản Lý',
-    role: 'admin',
-    roleTitle: 'Trưởng Ban Nhân Sự (Admin)',
-    department: 'Phòng Nhân Sự & Tuân Thủ',
-    status: 'CONFIRMED',
-    avatar: 'QL',
-    balance: {
-      annual: 10,
-      annualTotal: 15,
-      sick: 30,
-      maternity: 0,
-      unpaid: 0,
-    },
-  },
 };
 
 // ── Reviewer Cases Data ─────────────────────────────────────────────────────
@@ -161,9 +108,11 @@ const INITIAL_REVIEWER_CASES = [
 ];
 
 // ── State ───────────────────────────────────────────────────────────────────
-let currentUser = PROFILES.huong;
+let currentUser = null;
+let accountDirectory = [];
 let attachedFiles = [];
 let currentSelectedCaseId = null;
+let impactQuerySequence = 0;
 
 // ── Crypto Helpers ──────────────────────────────────────────────────────────
 async function sha256Hex(text) {
@@ -218,10 +167,75 @@ function updateDaysRequested() {
   const days = calculateWorkingDays(start, end);
   document.getElementById('input-days').value = days;
   document.getElementById('days-summary-text').textContent = `${days} ngày làm việc (không tính T7 & CN)`;
+  renderImpactAssessment();
+}
+
+async function renderImpactAssessment() {
+  const countElement = document.getElementById('impact-dept-count');
+  if (!countElement) return;
+
+  const startDate = document.getElementById('input-start-date')?.value;
+  const endDate = document.getElementById('input-end-date')?.value;
+  const roleElement = document.getElementById('impact-requester-role');
+  const departmentSummary = document.getElementById('impact-dept-summary');
+  const roleSummary = document.getElementById('impact-role-summary');
+
+  if (!currentUser) {
+    countElement.textContent = '—';
+    roleElement.textContent = '—';
+    departmentSummary.textContent = 'Đăng nhập để xem đơn cùng phòng ban.';
+    roleSummary.textContent = 'Vai trò sẽ hiển thị sau khi đăng nhập.';
+    return;
+  }
+
+  const roleLabels = {
+    EMPLOYEE: 'Nhân viên',
+    MANAGER: 'Trưởng phòng',
+    DIRECTOR: 'Giám đốc',
+  };
+  roleElement.textContent = roleLabels[currentUser.role] || currentUser.roleTitle;
+  roleSummary.textContent = currentUser.role === 'DIRECTOR'
+    ? 'Cần chọn người quản lý được ủy quyền trước khi gửi đơn.'
+    : currentUser.role === 'MANAGER'
+      ? 'Đơn của quản lý sẽ được chuyển đến cấp có thẩm quyền.'
+      : 'Đơn được xem xét cùng mức độ ảnh hưởng trong phòng ban.';
+
+  if (!startDate || !endDate) {
+    countElement.textContent = '—';
+    departmentSummary.textContent = 'Chọn khoảng ngày nghỉ để xem đánh giá.';
+    return;
+  }
+
+  const querySequence = ++impactQuerySequence;
+  const employeeId = currentUser.employeeId;
+  countElement.textContent = '…';
+  departmentSummary.textContent = 'Đang cập nhật đơn cùng phòng ban.';
+
+  try {
+    const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
+    const response = await fetch(`${API_BASE}/api/v1/impact?${params}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Impact request failed');
+    const result = await response.json();
+    if (querySequence !== impactQuerySequence || currentUser?.employeeId !== employeeId) return;
+
+    countElement.textContent = `${result.request_count} đơn`;
+    departmentSummary.textContent = result.request_count
+      ? `${result.request_count} đơn khác trong ${result.department} trùng thời gian.`
+      : `Chưa có đơn khác trong ${result.department} trùng thời gian.`;
+  } catch {
+    if (querySequence !== impactQuerySequence || currentUser?.employeeId !== employeeId) return;
+    countElement.textContent = '—';
+    departmentSummary.textContent = 'Chưa lấy được số liệu tác động từ máy chủ.';
+  }
 }
 
 // ── Tab Navigation ──────────────────────────────────────────────────────────
 function switchTab(tabId) {
+  const managerTabs = ['reviewer'];
+  const directorTabs = ['ledger', 'smoke', 'vlm'];
+  if (managerTabs.includes(tabId) && !['MANAGER', 'DIRECTOR'].includes(currentUser?.role)) return;
+  if (directorTabs.includes(tabId) && currentUser?.role !== 'DIRECTOR') return;
+
   document.querySelectorAll('.tab-pane').forEach((el) => el.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach((el) => el.classList.remove('active'));
 
@@ -255,35 +269,128 @@ function switchTab(tabId) {
   }
 }
 
-// ── User Profile & Balance Rendering ────────────────────────────────────────
-function applyUserProfile(userKey) {
-  currentUser = PROFILES[userKey] || PROFILES.huong;
-  localStorage.setItem(STORAGE_KEYS.CURRENT_USER, userKey);
-
+// ── Authenticated User Profile & Balance Rendering ──────────────────────────
+function applyUserProfile(profile) {
+  currentUser = { ...profile, id: profile.employeeId };
   document.getElementById('nav-user-name').textContent = currentUser.name;
   document.getElementById('nav-user-role').textContent = currentUser.roleTitle;
   document.getElementById('nav-user-avatar').textContent = currentUser.avatar;
 
   const bal = currentUser.balance;
+  document.getElementById('balance-account-name').textContent = `Tài khoản: ${currentUser.name} · ${currentUser.employeeId}`;
   document.getElementById('bal-annual-remaining').textContent = `${bal.annual}.0`;
   document.getElementById('bal-annual-total').textContent = `/ ${bal.annualTotal} ngày`;
-  const pct = Math.min(100, Math.round((bal.annual / bal.annualTotal) * 100));
-  document.getElementById('bal-annual-bar').style.width = `${pct}%`;
+  const annualPct = bal.annualTotal > 0 ? Math.min(100, Math.round((bal.annual / bal.annualTotal) * 100)) : 0;
+  document.getElementById('bal-annual-bar').style.width = `${annualPct}%`;
 
   document.getElementById('bal-sick-remaining').textContent = bal.sick;
+  document.getElementById('bal-sick-bar').style.width = `${Math.min(100, Math.round((bal.sick / 30) * 100))}%`;
   document.getElementById('bal-maternity-remaining').textContent = bal.maternity;
   document.getElementById('bal-unpaid-used').textContent = bal.unpaid;
 
-  const isAdmin = currentUser.role === 'admin';
-  ['reviewer', 'ledger', 'smoke', 'vlm'].forEach((tabKey) => {
-    const btn = document.getElementById(`nav-btn-${tabKey}`);
-    if (btn) btn.style.display = isAdmin ? 'inline-flex' : 'none';
+  const isManager = currentUser.role === 'MANAGER' || currentUser.role === 'DIRECTOR';
+  const isDirector = currentUser.role === 'DIRECTOR';
+  document.getElementById('nav-btn-reviewer').style.display = isManager ? 'inline-flex' : 'none';
+  ['ledger', 'smoke', 'vlm'].forEach((tabKey) => {
+    document.getElementById(`nav-btn-${tabKey}`).style.display = isDirector ? 'inline-flex' : 'none';
   });
 
   const nameField = document.getElementById('input-employee-name');
-  if (nameField) nameField.value = `${currentUser.name} (${currentUser.id} · ${currentUser.department})`;
+  if (nameField) nameField.value = `${currentUser.name} (${currentUser.employeeId} · ${currentUser.department})`;
 
-  showToast(`Đã chuyển phiên làm việc: ${currentUser.name}`, 'info');
+  const delegationField = document.getElementById('impact-delegation-field');
+  const delegationSelect = document.getElementById('impact-delegate');
+  delegationField.hidden = !isDirector;
+  delegationSelect.required = isDirector;
+  delegationSelect.replaceChildren(new Option('Chọn quản lý nhận ủy quyền', ''));
+  accountDirectory
+    .filter((account) => account.role === 'MANAGER' && account.employeeId !== currentUser.employeeId)
+    .forEach((account) => {
+      const option = new Option(`${account.name} · ${account.roleTitle}`, account.employeeId);
+      delegationSelect.append(option);
+    });
+
+  if (isDirector && !delegationSelect.options.length) {
+    delegationSelect.append(new Option('Không có quản lý đủ thẩm quyền', ''));
+  }
+
+  updateRequestsBadge();
+  renderImpactAssessment();
+}
+
+function setLoginVisible(visible) {
+  const loginScreen = document.getElementById('login-screen');
+  loginScreen.classList.toggle('is-hidden', !visible);
+  if (visible) document.getElementById('login-username').focus();
+}
+
+function applyAuthenticatedSession(session) {
+  accountDirectory = session.directory || [];
+  applyUserProfile(session.user);
+  setLoginVisible(false);
+  switchTab('apply');
+}
+
+async function restoreSession() {
+  try {
+    const response = await fetch(`${API_BASE}/api/v1/auth/me`, { cache: 'no-store' });
+    if (!response.ok) throw new Error('No active session');
+    applyAuthenticatedSession(await response.json());
+  } catch {
+    currentUser = null;
+    setLoginVisible(true);
+  }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const submitButton = document.getElementById('login-submit');
+  const errorElement = document.getElementById('login-error');
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  submitButton.disabled = true;
+  submitButton.textContent = 'Đang xác thực...';
+  errorElement.textContent = '';
+
+  try {
+    const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      errorElement.textContent = response.status === 429
+        ? 'Đăng nhập tạm khóa do nhập sai nhiều lần. Vui lòng thử lại sau.'
+        : response.status === 401
+          ? 'Tên tài khoản hoặc mật khẩu không chính xác.'
+          : 'Không thể xác thực tài khoản. Vui lòng thử lại.';
+      return;
+    }
+
+    document.getElementById('login-form').reset();
+    applyAuthenticatedSession(result);
+    showToast(`Đăng nhập thành công: ${currentUser.name}`, 'success');
+  } catch {
+    errorElement.textContent = 'Không kết nối được máy chủ. Vui lòng thử lại.';
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = 'Đăng nhập';
+  }
+}
+
+async function logout() {
+  try {
+    const response = await fetch(`${API_BASE}/api/v1/auth/logout`, { method: 'POST' });
+    if (!response.ok) throw new Error('Logout failed');
+    currentUser = null;
+    accountDirectory = [];
+    document.getElementById('login-error').textContent = '';
+    setLoginVisible(true);
+  } catch {
+    showToast('Không thể đăng xuất khỏi máy chủ. Vui lòng thử lại.', 'error');
+  }
 }
 
 // ── Presets ─────────────────────────────────────────────────────────────────
@@ -461,6 +568,18 @@ function renderFilePreview() {
 async function handleLeaveSubmit(e) {
   e.preventDefault();
 
+  if (!currentUser) {
+    setLoginVisible(true);
+    return;
+  }
+
+  const delegatedToId = document.getElementById('impact-delegate').value;
+  if (currentUser.role === 'DIRECTOR' && !delegatedToId) {
+    showToast('Giám đốc cần chọn người được ủy quyền trước khi gửi đơn.', 'error');
+    document.getElementById('impact-delegate').focus();
+    return;
+  }
+
   const submitBtn = document.getElementById('btn-submit-leave');
   const originalText = submitBtn.innerHTML;
   submitBtn.disabled = true;
@@ -472,6 +591,7 @@ async function handleLeaveSubmit(e) {
     const endDate = document.getElementById('input-end-date').value;
     const daysRequested = parseInt(document.getElementById('input-days').value, 10) || 1;
     const reason = document.getElementById('input-reason').value;
+    const delegate = accountDirectory.find((account) => account.employeeId === delegatedToId);
 
     const employeeHashedId = await sha256Hex(currentUser.id);
     const requestId = crypto.randomUUID();
@@ -498,6 +618,7 @@ async function handleLeaveSubmit(e) {
         maternity_weeks_remaining: currentUser.balance.maternity,
         unpaid_days_used_ytd: currentUser.balance.unpaid,
       },
+      delegated_to: delegate?.employeeId,
       attached_documents,
       submitted_at: new Date().toISOString(),
     };
@@ -519,6 +640,11 @@ async function handleLeaveSubmit(e) {
       startDate,
       endDate,
       reason,
+      employeeId: currentUser.employeeId,
+      department: currentUser.department,
+      requesterRole: currentUser.role,
+      delegatedToId: delegate?.employeeId || '',
+      delegatedToName: delegate?.name || '',
       status: result.outcome,
       decisionReceipt: result.cryptographic_receipt,
       policyBasis: result.policy_basis,
@@ -543,7 +669,7 @@ async function handleLeaveSubmit(e) {
 
     if (result.outcome === 'AUTO_APPROVE' && leaveType === 'ANNUAL') {
       currentUser.balance.annual = Math.max(0, currentUser.balance.annual - daysRequested);
-      applyUserProfile(currentUser.id === 'NV-2024-0312' ? 'huong' : 'phuong');
+      applyUserProfile(currentUser);
     }
 
     showToast('Đã nhận quyết định thẩm định hồ sơ thành công', 'success');
@@ -638,10 +764,16 @@ function saveUserRequest(req) {
   list.unshift(req);
   localStorage.setItem(STORAGE_KEYS.MY_REQUESTS, JSON.stringify(list));
   updateRequestsBadge();
+  renderImpactAssessment();
+}
+
+function getCurrentUserRequests() {
+  if (!currentUser) return [];
+  return getSavedRequests().filter((item) => item.employeeId === currentUser.employeeId);
 }
 
 function updateRequestsBadge() {
-  const list = getSavedRequests();
+  const list = getCurrentUserRequests();
   const badge = document.getElementById('badge-my-requests-count');
   if (badge) badge.textContent = list.length;
 }
@@ -650,7 +782,7 @@ function renderMyRequests() {
   const tbody = document.getElementById('my-requests-tbody');
   if (!tbody) return;
 
-  const list = getSavedRequests();
+  const list = getCurrentUserRequests();
   if (!list.length) {
     tbody.innerHTML = `
       <tr>
@@ -1890,7 +2022,7 @@ async function checkBackendHealth() {
 }
 
 // ── Initialization ──────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
@@ -1902,13 +2034,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('input-start-date').addEventListener('change', updateDaysRequested);
   document.getElementById('input-end-date').addEventListener('change', updateDaysRequested);
+  document.getElementById('impact-delegate').addEventListener('change', renderImpactAssessment);
 
   document.getElementById('form-leave-request').addEventListener('submit', handleLeaveSubmit);
+  document.getElementById('login-form').addEventListener('submit', handleLogin);
 
   initFileUpload();
-
-  const savedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || 'huong';
-  applyUserProfile(savedUser);
 
   if (!getSavedRequests().length) {
     saveUserRequest({
@@ -1916,6 +2047,8 @@ document.addEventListener('DOMContentLoaded', () => {
       requestId: crypto.randomUUID(),
       leaveType: 'ANNUAL',
       days: 1,
+      employeeId: 'NV-2024-0312',
+      department: 'Phòng Kinh doanh',
       startDate: '2026-09-15',
       endDate: '2026-09-15',
       reason: 'Khám sức khỏe định kỳ',
@@ -1926,7 +2059,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  updateRequestsBadge();
+  await restoreSession();
   checkBackendHealth();
   setInterval(checkBackendHealth, 15000);
 });
