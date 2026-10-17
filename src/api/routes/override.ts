@@ -11,6 +11,7 @@
 import { Router, type Request, type Response, type IRouter } from "express";
 import { HitlOverrideRequestSchema, type HitlOverrideResponse } from "./schemas.js";
 import { generateOverrideReceipt, appendOverrideToLedger } from "../../ledger/audit.js";
+import { resolvePendingLeaveDecision } from "../../core/pending_leave_decisions.js";
 
 export const overrideRouter: IRouter = Router();
 
@@ -27,6 +28,20 @@ overrideRouter.post("/override", async (req: Request, res: Response): Promise<vo
   }
 
   const { decision_id, reviewer_id, resolution } = parseResult.data;
+  const decisionResolution = resolvePendingLeaveDecision(parseResult.data);
+  if (decisionResolution === "DECISION_MISMATCH") {
+    res.status(409).json({ error: "DECISION_REQUEST_MISMATCH" });
+    return;
+  }
+  if (decisionResolution === "ALREADY_RESOLVED") {
+    res.status(409).json({ error: "LEAVE_REQUEST_ALREADY_RESOLVED" });
+    return;
+  }
+  if (decisionResolution === "INSUFFICIENT_BALANCE") {
+    res.status(409).json({ error: "INSUFFICIENT_LEAVE_BALANCE" });
+    return;
+  }
+
   const recorded_at = new Date().toISOString();
 
   const final_status: HitlOverrideResponse["final_status"] =

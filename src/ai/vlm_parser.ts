@@ -11,7 +11,7 @@
  *   - Extract form metadata (issue date, issuing authority) for downstream rules validation.
  *
  * SAFETY BOUNDARY (AGENTS.md §2 & §5 Failure Handling):
- *   - VLM output is STRUCTURAL ONLY (stamp present/absent, signature present/absent).
+ *   - VLM output is limited to visible document category, stamp/signature, and form metadata.
  *   - VLM MUST NOT be used to interpret policy, calculate dates, or verify labor law compliance.
  *   - On VLM timeout or image quality failure → workflow transitions to ESCALATE with U1_DATA.
  *   - Missing dates from blurry images MUST NOT be imputed by LLM.
@@ -19,7 +19,10 @@
  */
 
 import { z } from "zod";
-import type { AttachedDocument } from "../api/routes/schemas.js";
+import type {
+  AttachedDocument,
+  DetectedEvidenceType,
+} from "../api/routes/schemas.js";
 import {
   callOpenRouter,
   createOpenRouterModelRoute,
@@ -35,9 +38,11 @@ import {
 /** The structured output of a successful VLM analysis pass on a single document. */
 export interface VlmAnalysisResult {
   document_id: string;
+  /** Visible document category; it is mapped to leave types by deterministic code. */
+  detected_document_type: DetectedEvidenceType;
   /** True if a red official stamp was detected with sufficient confidence. */
   red_stamp_detected: boolean;
-  /** True if a handwritten or printed authorized signature was detected. */
+  /** True if a visible handwritten or ink signature was detected. */
   signature_detected: boolean;
   /** VLM confidence score [0.0 – 1.0]. Below 0.70 triggers U1_DATA escalation. */
   confidence_score: number;
@@ -64,9 +69,17 @@ export type VlmParseOutcome =
 /** Minimum acceptable confidence score for a VLM result to be trusted. */
 const CONFIDENCE_THRESHOLD = 0.70;
 const DEFAULT_VLM_TIMEOUT_MS = 30_000;
-const MAX_VLM_TIMEOUT_MS = 60_000;
+const MAX_VLM_TIMEOUT_MS = 30_000;
 
 const VlmModelOutputSchema = z.object({
+  detected_document_type: z.enum([
+    "C65_HD",
+    "SICK_MEDICAL_DOCUMENT",
+    "MATERNITY_CERTIFICATE",
+    "GENERAL_LEAVE_FORM",
+    "OTHER",
+    "UNKNOWN",
+  ]).optional().default("UNKNOWN"),
   red_stamp_detected: z.boolean(),
   signature_detected: z.boolean(),
   confidence_score: z.number().min(0).max(1),
@@ -97,7 +110,7 @@ function getVlmModelRoute() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const VLM_SYSTEM_PROMPT = `\
-You analyze images of Vietnamese HR medical evidence, especially C65-HD forms.
+You analyze images attached to Vietnamese HR leave requests, including C65-HD medical forms.
 Use only what is visibly present in the image. Inspect the whole page, including edges,
 overlapping marks, and partially faded areas. Your ONLY job is visual extraction.
 You MUST NOT interpret policy, calculate leave entitlements, or make decisions.
@@ -119,6 +132,15 @@ RED STAMP DETECTION (Vietnamese: dấu mộc đỏ / dấu đóng đỏ):
   makes the stamp's presence or absence uncertain.
 
 OTHER EXTRACTION:
+- Classify the visible document using headings, form codes, and legible content only:
+  - C65_HD: explicitly identified as C65-HD / a C65-HD social-insurance certificate.
+  - SICK_MEDICAL_DOCUMENT: a clearly medical certificate, hospital discharge paper, or
+    medical treatment document that is not explicitly a C65-HD form.
+  - MATERNITY_CERTIFICATE: a document clearly about pregnancy, childbirth, or maternity leave.
+  - GENERAL_LEAVE_FORM: a general employee leave application or leave request form.
+  - OTHER: a legible document that clearly belongs to another category.
+  - UNKNOWN: the type cannot be determined from visible content. Do not infer type from
+    the leave request or the filename.
 - Set signature_detected to true only for a visible handwritten or ink signature, not a
   printed or typed person's name. A signature can overlap a stamp; assess each separately.
 - Extract the issue date only when its digits are legible. Return it as YYYY-MM-DD; if any
@@ -127,6 +149,7 @@ OTHER EXTRACTION:
 
 Respond ONLY with a valid JSON object using this exact schema (no markdown, no prose):
 {
+  "detected_document_type": "C65_HD" | "SICK_MEDICAL_DOCUMENT" | "MATERNITY_CERTIFICATE" | "GENERAL_LEAVE_FORM" | "OTHER" | "UNKNOWN",
   "red_stamp_detected": boolean,
   "signature_detected": boolean,
   "confidence_score": number (0.0 to 1.0, based on visual assessability),
@@ -175,6 +198,7 @@ export async function parseDocument(
     };
   }
 
+  const startedAt = Date.now();
   try {
     const response = await callOpenRouter(
       {
@@ -196,15 +220,19 @@ export async function parseDocument(
               },
               {
                 type: "text",
-                text: "Analyze this C65-HD form. Return only the JSON object as specified.",
+                text: "Analyze this Vietnamese leave document. Return only the JSON object as specified.",
               },
             ],
           },
         ],
-        max_tokens: 256,
+        max_tokens: 160,
         temperature: 0, // deterministic extraction — no creative variance
       },
       getVlmTimeoutMs()
+    );
+    console.info(
+      `[AER/vlm_parser] Document analysis completed ` +
+        `(model=${getVlmModel()}, elapsed_ms=${Date.now() - startedAt})`
     );
 
     const choice = response.choices[0];
@@ -270,6 +298,7 @@ export async function parseDocument(
       success: true,
       result: {
         document_id: document.document_id,
+        detected_document_type: parsed.detected_document_type,
         red_stamp_detected: Boolean(parsed.red_stamp_detected),
         signature_detected: Boolean(parsed.signature_detected),
         confidence_score: parsed.confidence_score,
@@ -293,6 +322,7 @@ export async function parseDocument(
         document.document_id +
         " (" +
         failureSummary +
+        `, elapsed_ms=${Date.now() - startedAt}` +
         "); escalating for manual data review"
     );
     return {

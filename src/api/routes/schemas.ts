@@ -47,6 +47,42 @@ export const DecisionOutcomeSchema = z.enum([
   "REJECT",        // Deterministic rule violation with no ambiguity.
 ]);
 
+/** Visual document categories returned by the VLM; these are descriptive, not policy decisions. */
+export const DetectedEvidenceTypeSchema = z.enum([
+  "C65_HD",
+  "SICK_MEDICAL_DOCUMENT",
+  "MATERNITY_CERTIFICATE",
+  "GENERAL_LEAVE_FORM",
+  "OTHER",
+  "UNKNOWN",
+]);
+
+/** Deterministic comparison between the detected document category and requested leave type. */
+export const EvidenceRelevanceSchema = z.enum([
+  "RELEVANT",
+  "NOT_RELEVANT",
+  "UNKNOWN",
+]);
+
+export const EvidenceAssessmentSchema = z.object({
+  document_id: z.string().uuid().nullable(),
+  declared_form_type: z.string().min(1).nullable(),
+  detected_document_type: DetectedEvidenceTypeSchema.nullable(),
+  leave_type: LeaveTypeSchema,
+  relevance: EvidenceRelevanceSchema,
+  analysis_status: z.enum(["ANALYZED", "FAILED", "MISSING", "SKIPPED"]),
+  red_stamp_detected: z.boolean().nullable(),
+  signature_detected: z.boolean().nullable(),
+  confidence_score: z.number().min(0).max(1).nullable(),
+  failure_reason: z.enum([
+    "TIMEOUT",
+    "IMAGE_QUALITY_TOO_LOW",
+    "MODEL_UNAVAILABLE",
+    "UNSUPPORTED_FORMAT",
+    "MISSING_DOCUMENT",
+  ]).nullable(),
+});
+
 /** Employment status influencing leave eligibility rules (Article 8.2 context). */
 export const EmploymentStatusSchema = z.enum([
   "PROBATION",
@@ -175,6 +211,9 @@ export const EvaluationResponseSchema = z.object({
 
   /** ISO 8601 timestamp of when this evaluation was completed. */
   evaluated_at: z.string().datetime(),
+
+  /** Visual evidence findings and deterministic document-to-leave relevance comparison. */
+  evidence_assessments: z.array(EvidenceAssessmentSchema).optional(),
 })
   // Business rule: escalation questions are required when and only when outcome is ESCALATE.
   .refine(
@@ -274,6 +313,8 @@ export const HitlOverrideResponseSchema = z.object({
 export type LeaveType = z.infer<typeof LeaveTypeSchema>;
 export type UncertaintyCategory = z.infer<typeof UncertaintyCategorySchema>;
 export type DecisionOutcome = z.infer<typeof DecisionOutcomeSchema>;
+export type DetectedEvidenceType = z.infer<typeof DetectedEvidenceTypeSchema>;
+export type EvidenceAssessment = z.infer<typeof EvidenceAssessmentSchema>;
 export type EmploymentStatus = z.infer<typeof EmploymentStatusSchema>;
 export type AttachedDocument = z.infer<typeof AttachedDocumentSchema>;
 export type LeaveBalance = z.infer<typeof LeaveBalanceSchema>;

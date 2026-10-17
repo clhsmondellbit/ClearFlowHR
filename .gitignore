@@ -5,3 +5,5 @@ dist/
 .DS_Store
 coverage/
 *.png
+data/leave-balances.json
+data/pending-leave-decisions.json

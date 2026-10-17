@@ -7,9 +7,13 @@
  */
 
 import { Router, type Request, type Response, type IRouter } from "express";
-import { createHash } from "node:crypto";
-import { type AuthenticatedRequest } from "../../auth/session.js";
+import {
+  applyApprovedLeaveBalance,
+  findAccountByEmployeeHash,
+  toLeaveBalanceSnapshot,
+} from "../../auth/accounts.js";
 import { recordDepartmentLeaveRequest } from "../../core/impact_registry.js";
+import { rememberPendingLeaveDecision } from "../../core/pending_leave_decisions.js";
 import { EmployeeLeaveRequestSchema, type EvaluationResponse } from "./schemas.js";
 import { runEvaluation } from "../../core/orchestrator.js";
 
@@ -27,18 +31,41 @@ evaluateRouter.post("/evaluate", async (req: Request, res: Response): Promise<vo
     return;
   }
 
-  // Step 2–5: Run the full deterministic evaluation pipeline via orchestrator.
-  const response = await runEvaluation(parseResult.data);
+  const employeeAccount = findAccountByEmployeeHash(parseResult.data.employee_id);
+  const evaluationRequest = employeeAccount
+    ? { ...parseResult.data, leave_balance: toLeaveBalanceSnapshot(employeeAccount) }
+    : parseResult.data;
 
-  const account = (req as AuthenticatedRequest).account;
-  const ownEmployeeHash = account
-    ? createHash("sha256").update(account.employeeId).digest("hex")
-    : "";
-  if (account && parseResult.data.employee_id === ownEmployeeHash) {
+  // Use the server-side balance for every employee account tracked by AER.
+  const evaluationStartedAt = Date.now();
+  const response = await runEvaluation(evaluationRequest);
+  console.info(
+    `[AER/evaluate] Evaluation completed ` +
+      `(outcome=${response.outcome}, elapsed_ms=${Date.now() - evaluationStartedAt})`
+  );
+
+  if (employeeAccount && response.outcome === "AUTO_APPROVE") {
+    const balanceResult = applyApprovedLeaveBalance(
+      employeeAccount,
+      parseResult.data.request_id,
+      parseResult.data.leave_type,
+      parseResult.data.days_requested
+    );
+    if (balanceResult === "INSUFFICIENT") {
+      res.status(409).json({ error: "LEAVE_BALANCE_CHANGED_RETRY" });
+      return;
+    }
+  }
+
+  if (employeeAccount && response.outcome === "ESCALATE") {
+    rememberPendingLeaveDecision(evaluationRequest, response);
+  }
+
+  if (employeeAccount) {
     recordDepartmentLeaveRequest({
       request_id: parseResult.data.request_id,
       employee_id: parseResult.data.employee_id,
-      department: account.department,
+      department: employeeAccount.department,
       start_date: parseResult.data.start_date,
       end_date: parseResult.data.end_date,
       outcome: response.outcome,

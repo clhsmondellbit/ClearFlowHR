@@ -9,9 +9,24 @@
  *   04 — CONFIRMED employee, COMPASSIONATE leave, ≤5 days (TIER_1).
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { runEvaluation } from "../../src/core/orchestrator.js";
 import { makeRequest } from "./helpers.js";
+
+vi.mock("../../src/ai/vlm_parser.js", () => ({
+  analyzeAttachments: async (documents: Array<{ document_id: string }>) => documents.map(({ document_id }) => ({
+    success: true as const,
+    result: {
+      document_id,
+      detected_document_type: "C65_HD" as const,
+      red_stamp_detected: true,
+      signature_detected: true,
+      confidence_score: 0.99,
+      extracted_issue_date: "2026-09-30",
+      extracted_issuing_authority: "Bệnh viện",
+    },
+  })),
+}));
 
 describe("Benchmark Cases 01–04: AUTO_APPROVE", () => {
   it("Case 01 — CONFIRMED + ANNUAL + within balance + ≤5 days → AUTO_APPROVE", async () => {
@@ -45,6 +60,12 @@ describe("Benchmark Cases 01–04: AUTO_APPROVE", () => {
         maternity_weeks_remaining: 26,
         unpaid_days_used_ytd: 0,
       },
+      attached_documents: [{
+        document_id: "d0000000-0000-4000-a000-000000000002",
+        form_type: "C65-HD",
+        content_ref: "data:image/png;base64,AA==",
+        mime_type: "image/png",
+      }],
     });
 
     const result = await runEvaluation(request);

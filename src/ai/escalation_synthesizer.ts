@@ -128,8 +128,19 @@ let invalidOutputWarningLogged = false;
 function getSynthesisTimeoutMs(): number {
   const configuredTimeout = Number(process.env["SYNTH_TIMEOUT_MS"]);
   return Number.isSafeInteger(configuredTimeout) && configuredTimeout > 0
-    ? Math.min(configuredTimeout, 60_000)
-    : 30_000;
+    ? Math.min(configuredTimeout, 10_000)
+    : 8_000;
+}
+
+function isLlmSynthesisEnabled(): boolean {
+  const configured = process.env["SYNTH_LLM_ENABLED"]?.trim().toLowerCase();
+  if (configured !== undefined && configured.length > 0) {
+    return configured === "true";
+  }
+
+  // Keep enrichment available in development, but avoid a second model call
+  // on every production escalation unless an operator opts in explicitly.
+  return process.env["NODE_ENV"] !== "production";
 }
 
 function validateAndPreserveDecisionClause(
@@ -184,7 +195,7 @@ async function enrichWithLlm(
               `uncertainty: ${input.uncertainty_category}):\n\n${templateQuestion}`,
           },
         ],
-        max_tokens: 300,
+        max_tokens: 160,
         temperature: 0.3,
       },
       getSynthesisTimeoutMs()
@@ -227,8 +238,8 @@ async function enrichWithLlm(
  *
  * Flow:
  *   1. Build the deterministic template question (always done first).
- *   2. If in test suite (Vitest) or offline, return the deterministic template immediately (< 1ms).
- *   3. If an Anthropic API key is set in dev/prod, attempt LLM language enrichment.
+ *   2. If in test suite, offline, or LLM enrichment is disabled, return the template immediately.
+ *   3. Otherwise, attempt LLM language enrichment with a short timeout.
  *   4. If LLM fails or format is invalid, return the template verbatim.
  *
  * The question text is the ONLY LLM output surface in the entire AER system.
@@ -251,8 +262,14 @@ export async function synthesizeEscalationQuestion(
   const template = TEMPLATES[input.uncertainty_category];
   const templateQuestion = template(input);
 
-  // During automated unit/benchmark testing or when offline, use the deterministic template immediately
-  if (process.env["NODE_ENV"] === "test" || Boolean(process.env["VITEST"]) || !getApiKey()) {
+  // Keep the decision path fast in production: the deterministic template already
+  // satisfies the closed-question contract and does not need a second model call.
+  if (
+    process.env["NODE_ENV"] === "test" ||
+    Boolean(process.env["VITEST"]) ||
+    !isLlmSynthesisEnabled() ||
+    !getApiKey()
+  ) {
     return templateQuestion;
   }
 

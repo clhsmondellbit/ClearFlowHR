@@ -1,3 +1,18 @@
+import { createHash } from "node:crypto";
+import {
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, resolve } from "node:path";
+import { z } from "zod";
+import {
+  LeaveBalanceSchema,
+  type LeaveBalance,
+  type LeaveType,
+} from "../api/routes/schemas.js";
+
 export type AccountRole = "EMPLOYEE" | "MANAGER" | "DIRECTOR";
 
 export interface UserAccount {
@@ -103,9 +118,127 @@ export const USER_ACCOUNTS: UserAccount[] = [
   },
 ];
 
+const PersistedAccountStateSchema = z.object({
+  balances: z.record(z.string().regex(/^[a-f0-9]{64}$/), LeaveBalanceSchema),
+  applied_request_ids: z.array(z.string().min(1)),
+}).strict();
+
+const ACCOUNT_STATE_PATH = process.env["AER_ACCOUNT_STATE_FILE"] ??
+  resolve(process.cwd(), "data/leave-balances.json");
+const appliedLeaveRequestIds = new Set<string>();
+
+function hashEmployeeAccount(account: UserAccount): string {
+  return createHash("sha256").update(account.employeeId).digest("hex");
+}
+
+function persistAccountState(): void {
+  const state = {
+    balances: Object.fromEntries(USER_ACCOUNTS.map((account) => [
+      hashEmployeeAccount(account),
+      toLeaveBalanceSnapshot(account),
+    ])),
+    applied_request_ids: [...appliedLeaveRequestIds],
+  };
+  const temporaryPath = `${ACCOUNT_STATE_PATH}.${process.pid}.tmp`;
+
+  try {
+    mkdirSync(dirname(ACCOUNT_STATE_PATH), { recursive: true });
+    writeFileSync(temporaryPath, JSON.stringify(state), { mode: 0o600 });
+    renameSync(temporaryPath, ACCOUNT_STATE_PATH);
+  } catch {
+    throw new Error("[AER/accounts] Could not persist leave balance state.");
+  }
+}
+
+function restoreAccountState(): void {
+  let rawState: string;
+  try {
+    rawState = readFileSync(ACCOUNT_STATE_PATH, "utf8");
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") return;
+    console.warn("[AER/accounts] Leave balance state could not be read; using seeded balances.");
+    return;
+  }
+
+  let decoded: unknown;
+  try {
+    decoded = JSON.parse(rawState);
+  } catch {
+    console.warn("[AER/accounts] Leave balance state is invalid; using seeded balances.");
+    return;
+  }
+
+  const parsed = PersistedAccountStateSchema.safeParse(decoded);
+  if (!parsed.success) {
+    console.warn("[AER/accounts] Leave balance state failed validation; using seeded balances.");
+    return;
+  }
+
+  for (const account of USER_ACCOUNTS) {
+    const savedBalance = parsed.data.balances[hashEmployeeAccount(account)];
+    if (!savedBalance) continue;
+    account.balance.annual = savedBalance.annual_days_remaining;
+    account.balance.sick = savedBalance.sick_days_remaining;
+    account.balance.maternity = savedBalance.maternity_weeks_remaining;
+    account.balance.unpaid = savedBalance.unpaid_days_used_ytd;
+  }
+  parsed.data.applied_request_ids.forEach((requestId) => appliedLeaveRequestIds.add(requestId));
+}
+
+restoreAccountState();
+
 export type PublicAccount = Omit<UserAccount, "salt" | "passwordHash">;
 
 export function toPublicAccount(account: UserAccount): PublicAccount {
   const { salt: _salt, passwordHash: _passwordHash, ...publicAccount } = account;
   return publicAccount;
+}
+
+export function findAccountByEmployeeHash(hashedEmployeeId: string): UserAccount | undefined {
+  return USER_ACCOUNTS.find((account) => hashEmployeeAccount(account) === hashedEmployeeId);
+}
+
+export function toLeaveBalanceSnapshot(account: UserAccount): LeaveBalance {
+  return {
+    annual_days_remaining: account.balance.annual,
+    sick_days_remaining: account.balance.sick,
+    maternity_weeks_remaining: account.balance.maternity,
+    unpaid_days_used_ytd: account.balance.unpaid,
+  };
+}
+
+export type LeaveBalanceApplyResult =
+  | "APPLIED"
+  | "ALREADY_APPLIED"
+  | "INSUFFICIENT"
+  | "NOT_TRACKED";
+
+/** Apply approved annual/sick leave once against a tracked employee account. */
+export function applyApprovedLeaveBalance(
+  account: UserAccount,
+  requestId: string,
+  leaveType: LeaveType,
+  days: number
+): LeaveBalanceApplyResult {
+  if (appliedLeaveRequestIds.has(requestId)) return "ALREADY_APPLIED";
+
+  const balanceKey = leaveType === "ANNUAL"
+    ? "annual"
+    : leaveType === "SICK"
+      ? "sick"
+      : null;
+  if (!balanceKey) return "NOT_TRACKED";
+  if (days > account.balance[balanceKey]) return "INSUFFICIENT";
+
+  const previousBalance = account.balance[balanceKey];
+  account.balance[balanceKey] -= days;
+  appliedLeaveRequestIds.add(requestId);
+  try {
+    persistAccountState();
+  } catch (error) {
+    account.balance[balanceKey] = previousBalance;
+    appliedLeaveRequestIds.delete(requestId);
+    throw error;
+  }
+  return "APPLIED";
 }

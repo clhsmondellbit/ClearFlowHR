@@ -113,6 +113,165 @@ let accountDirectory = [];
 let attachedFiles = [];
 let currentSelectedCaseId = null;
 let impactQuerySequence = 0;
+let pendingEvidencePreparations = 0;
+let leaveSubmissionInProgress = false;
+
+const LEAVE_TYPE_LABELS = {
+  ANNUAL: 'nghỉ phép năm',
+  SICK: 'nghỉ ốm',
+  MATERNITY: 'nghỉ thai sản',
+  PATERNITY: 'nghỉ chăm con sau sinh',
+  UNPAID: 'nghỉ không lương',
+  COMPASSIONATE: 'nghỉ việc riêng',
+};
+
+const EVIDENCE_TYPE_LABELS = {
+  C65_HD: 'Giấy C65-HD',
+  SICK_MEDICAL_DOCUMENT: 'Chứng từ y tế',
+  MATERNITY_CERTIFICATE: 'Giấy tờ thai sản',
+  GENERAL_LEAVE_FORM: 'Đơn xin nghỉ phép chung',
+  OTHER: 'Giấy tờ khác',
+  UNKNOWN: 'Chưa xác định được loại giấy tờ',
+};
+
+const EVIDENCE_FAILURE_LABELS = {
+  TIMEOUT: 'quá thời gian xử lý',
+  IMAGE_QUALITY_TOO_LOW: 'ảnh mờ hoặc không đủ chất lượng',
+  MODEL_UNAVAILABLE: 'dịch vụ nhận diện không khả dụng',
+  UNSUPPORTED_FORMAT: 'định dạng chưa được hỗ trợ',
+  MISSING_DOCUMENT: 'chưa đính kèm minh chứng',
+};
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  })[character]);
+}
+
+function renderEvidenceAssessmentsHtml(assessments) {
+  if (!Array.isArray(assessments)) {
+    return `
+      <div style="margin-top:8px; font-size:12px; color:var(--warning-700, #b45309)">
+        <strong>Đánh giá minh chứng:</strong> Máy chủ chưa trả kết quả kiểm tra minh chứng cho hồ sơ này.
+      </div>
+    `;
+  }
+
+  if (assessments.length === 0) {
+    return `
+      <div style="margin-top:8px; font-size:12px; color:var(--neutral-600)">
+        <strong>Đánh giá minh chứng:</strong> Không có tệp minh chứng đính kèm.
+      </div>
+    `;
+  }
+
+  const rows = assessments.map((assessment) => {
+    const isMissing = assessment.analysis_status === 'MISSING';
+    const isSkipped = assessment.analysis_status === 'SKIPPED';
+    const declaredType = escapeHtml(assessment.declared_form_type || (isMissing ? 'Chưa nộp' : 'Không rõ'));
+    const detectedType = isMissing
+      ? 'Chưa có tệp để nhận diện'
+      : isSkipped
+        ? 'Không phân tích do yêu cầu đã bị từ chối'
+        : EVIDENCE_TYPE_LABELS[assessment.detected_document_type] || 'Chưa xác định';
+    const leaveType = LEAVE_TYPE_LABELS[assessment.leave_type] || assessment.leave_type || 'loại nghỉ';
+    const relevance = assessment.relevance === 'RELEVANT'
+      ? 'phù hợp với loại nghỉ'
+      : assessment.relevance === 'NOT_RELEVANT'
+        ? 'không phù hợp với loại nghỉ'
+        : 'chưa xác định được mức độ phù hợp';
+    const stamp = assessment.red_stamp_detected === null
+      ? isMissing ? 'Chưa có minh chứng' : isSkipped ? 'Chưa kiểm tra' : 'Chưa xác định'
+      : assessment.red_stamp_detected ? 'Có' : 'Không phát hiện';
+    const signature = assessment.signature_detected === null
+      ? isMissing ? 'Chưa có minh chứng' : isSkipped ? 'Chưa kiểm tra' : 'Chưa xác định'
+      : assessment.signature_detected ? 'Có' : 'Không phát hiện';
+    const failure = assessment.failure_reason
+      ? ` — ${EVIDENCE_FAILURE_LABELS[assessment.failure_reason] || escapeHtml(assessment.failure_reason)}`
+      : '';
+    const confidence = Number.isFinite(assessment.confidence_score)
+      ? ` · Độ rõ ảnh: ${Math.round(assessment.confidence_score * 100)}%`
+      : '';
+
+    return `
+      <div style="padding:7px 0; border-top:1px solid var(--border)">
+        <div><strong>${declaredType}</strong> · Nhận diện: ${escapeHtml(detectedType)} · ${escapeHtml(relevance)} (${escapeHtml(leaveType)})</div>
+        <div>Dấu mộc đỏ: ${escapeHtml(stamp)} · Chữ ký: ${escapeHtml(signature)}${escapeHtml(confidence)}${escapeHtml(failure)}</div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div style="margin-top:8px; font-size:12px; line-height:1.55; color:var(--neutral-600)">
+      <strong>Đánh giá minh chứng</strong>
+      ${rows}
+      <div style="margin-top:5px; font-size:11px">Đánh giá loại giấy tờ dựa trên nội dung nhìn thấy; “chưa xác định” cần người phụ trách kiểm tra.</div>
+    </div>
+  `;
+}
+
+const MAX_VLM_IMAGE_DIMENSION = 3000;
+const MAX_UNCOMPRESSED_VLM_IMAGE_BYTES = 3 * 1024 * 1024;
+
+function readAsDataUrl(fileOrBlob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') resolve(reader.result);
+      else reject(new Error('Could not read the selected evidence file.'));
+    };
+    reader.onerror = () => reject(reader.error || new Error('Could not read the selected evidence file.'));
+    reader.readAsDataURL(fileOrBlob);
+  });
+}
+
+function updateLeaveSubmitButtonState() {
+  const button = document.getElementById('btn-submit-leave');
+  if (button) {
+    button.disabled = leaveSubmissionInProgress || pendingEvidencePreparations > 0;
+  }
+}
+
+async function optimizeEvidenceImageForVlm(file, originalDataUrl) {
+  if (!file.type?.startsWith('image/') || typeof createImageBitmap !== 'function') {
+    return originalDataUrl;
+  }
+
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+    const largestSide = Math.max(bitmap.width, bitmap.height);
+    const scale = Math.min(1, MAX_VLM_IMAGE_DIMENSION / largestSide);
+    const supportedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const needsOptimization = scale < 1 ||
+      file.size > MAX_UNCOMPRESSED_VLM_IMAGE_BYTES ||
+      !supportedMimeTypes.includes(file.type);
+    if (!needsOptimization) return originalDataUrl;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext('2d');
+    if (!context) return originalDataUrl;
+
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    return optimizedDataUrl.length < originalDataUrl.length
+      ? optimizedDataUrl
+      : originalDataUrl;
+  } catch (err) {
+    console.warn('Could not prepare a smaller VLM image; using the original image.', err);
+    return originalDataUrl;
+  } finally {
+    bitmap?.close?.();
+  }
+}
 
 // ── Crypto Helpers ──────────────────────────────────────────────────────────
 async function sha256Hex(text) {
@@ -270,12 +429,8 @@ function switchTab(tabId) {
 }
 
 // ── Authenticated User Profile & Balance Rendering ──────────────────────────
-function applyUserProfile(profile) {
-  currentUser = { ...profile, id: profile.employeeId };
-  document.getElementById('nav-user-name').textContent = currentUser.name;
-  document.getElementById('nav-user-role').textContent = currentUser.roleTitle;
-  document.getElementById('nav-user-avatar').textContent = currentUser.avatar;
-
+function renderCurrentUserBalance() {
+  if (!currentUser) return;
   const bal = currentUser.balance;
   document.getElementById('balance-account-name').textContent = `Tài khoản: ${currentUser.name} · ${currentUser.employeeId}`;
   document.getElementById('bal-annual-remaining').textContent = `${bal.annual}.0`;
@@ -287,6 +442,14 @@ function applyUserProfile(profile) {
   document.getElementById('bal-sick-bar').style.width = `${Math.min(100, Math.round((bal.sick / 30) * 100))}%`;
   document.getElementById('bal-maternity-remaining').textContent = bal.maternity;
   document.getElementById('bal-unpaid-used').textContent = bal.unpaid;
+}
+
+function applyUserProfile(profile) {
+  currentUser = { ...profile, id: profile.employeeId };
+  document.getElementById('nav-user-name').textContent = currentUser.name;
+  document.getElementById('nav-user-role').textContent = currentUser.roleTitle;
+  document.getElementById('nav-user-avatar').textContent = currentUser.avatar;
+  renderCurrentUserBalance();
 
   const isManager = currentUser.role === 'MANAGER' || currentUser.role === 'DIRECTOR';
   const isDirector = currentUser.role === 'DIRECTOR';
@@ -339,6 +502,20 @@ async function restoreSession() {
   } catch {
     currentUser = null;
     setLoginVisible(true);
+  }
+}
+
+async function refreshCurrentUserBalance() {
+  if (!currentUser) return;
+  try {
+    const response = await fetch(`${API_BASE}/api/v1/auth/me`, { cache: 'no-store' });
+    if (!response.ok) return;
+    const session = await response.json();
+    if (session.user?.employeeId !== currentUser.employeeId || !session.user.balance) return;
+    currentUser.balance = session.user.balance;
+    renderCurrentUserBalance();
+  } catch {
+    // Keep the most recent server-confirmed balance visible if a refresh fails.
   }
 }
 
@@ -459,24 +636,30 @@ function applyPreset(presetKey) {
 }
 
 async function loadPresetSampleFile(fileName, fileUrl) {
+  pendingEvidencePreparations += 1;
+  updateLeaveSubmitButtonState();
+  renderFilePreview();
   try {
     const res = await fetch(fileUrl);
+    if (!res.ok) throw new Error(`Sample evidence request failed (${res.status}).`);
     const blob = await res.blob();
-    const reader = new FileReader();
-    reader.onload = () => {
-      attachedFiles = [
-        {
-          name: fileName,
-          base64: reader.result,
-          mimeType: blob.type || 'image/jpeg',
-          size: blob.size,
-        },
-      ];
-      renderFilePreview();
-    };
-    reader.readAsDataURL(blob);
+    const base64 = await readAsDataUrl(blob);
+    const vlmBase64 = await optimizeEvidenceImageForVlm(blob, base64);
+    attachedFiles = [{
+      name: fileName,
+      base64,
+      vlmBase64,
+      vlmMimeType: vlmBase64.match(/^data:([^;,]+)/)?.[1] || blob.type || 'image/jpeg',
+      mimeType: blob.type || 'image/jpeg',
+      size: blob.size,
+    }];
   } catch (err) {
     console.warn('Could not load preset sample file', err);
+    showToast('Không tải được minh chứng mẫu. Vui lòng chọn tệp lại.', 'error');
+  } finally {
+    pendingEvidencePreparations = Math.max(0, pendingEvidencePreparations - 1);
+    updateLeaveSubmitButtonState();
+    renderFilePreview();
   }
 }
 
@@ -512,22 +695,39 @@ function initFileUpload() {
 }
 
 function handleFiles(fileList) {
-  Array.from(fileList).forEach((file) => {
+  const acceptedFiles = Array.from(fileList).filter((file) => {
     if (file.size > 15 * 1024 * 1024) {
       showToast(`Tệp ${file.name} vượt quá dung lượng cho phép (15MB)`, 'error');
-      return;
+      return false;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
+    return true;
+  });
+  if (!acceptedFiles.length) return;
+
+  pendingEvidencePreparations += acceptedFiles.length;
+  updateLeaveSubmitButtonState();
+  renderFilePreview();
+
+  acceptedFiles.forEach(async (file) => {
+    try {
+      const base64 = await readAsDataUrl(file);
+      const vlmBase64 = await optimizeEvidenceImageForVlm(file, base64);
       attachedFiles.push({
         name: file.name,
-        base64: reader.result,
+        base64,
+        vlmBase64,
+        vlmMimeType: vlmBase64.match(/^data:([^;,]+)/)?.[1] || file.type || 'image/jpeg',
         mimeType: file.type || 'image/jpeg',
         size: file.size,
       });
+    } catch (err) {
+      console.warn('Could not prepare evidence file.', err);
+      showToast(`Không đọc được tệp ${file.name}. Vui lòng chọn lại.`, 'error');
+    } finally {
+      pendingEvidencePreparations = Math.max(0, pendingEvidencePreparations - 1);
+      updateLeaveSubmitButtonState();
       renderFilePreview();
-    };
-    reader.readAsDataURL(file);
+    }
   });
 }
 
@@ -539,11 +739,13 @@ function removeFile(index) {
 function renderFilePreview() {
   const container = document.getElementById('file-preview-list');
   if (!attachedFiles.length) {
-    container.innerHTML = '';
+    container.innerHTML = pendingEvidencePreparations > 0
+      ? '<div style="font-size:12px; color:var(--neutral-500); padding:8px 0">Đang đọc và chuẩn bị minh chứng…</div>'
+      : '';
     return;
   }
 
-  container.innerHTML = attachedFiles
+  const attachmentsHtml = attachedFiles
     .map((f, i) => {
       const isImg = f.mimeType.startsWith('image/');
       const icon = isImg ? `<img src="${f.base64}" class="attachment-thumb" alt="thumb" />` : ICONS.fileText;
@@ -562,11 +764,20 @@ function renderFilePreview() {
     `;
     })
     .join('');
+  const pendingHtml = pendingEvidencePreparations > 0
+    ? '<div style="font-size:12px; color:var(--neutral-500); padding:8px 0">Đang đọc và chuẩn bị thêm minh chứng…</div>'
+    : '';
+  container.innerHTML = attachmentsHtml + pendingHtml;
 }
 
 // ── Submit Leave Request ────────────────────────────────────────────────────
 async function handleLeaveSubmit(e) {
   e.preventDefault();
+
+  if (pendingEvidencePreparations > 0) {
+    showToast('Đang chuẩn bị minh chứng. Vui lòng đợi hoàn tất rồi gửi đơn.', 'info');
+    return;
+  }
 
   if (!currentUser) {
     setLoginVisible(true);
@@ -582,7 +793,8 @@ async function handleLeaveSubmit(e) {
 
   const submitBtn = document.getElementById('btn-submit-leave');
   const originalText = submitBtn.innerHTML;
-  submitBtn.disabled = true;
+  leaveSubmissionInProgress = true;
+  updateLeaveSubmitButtonState();
   submitBtn.innerHTML = `Đang gửi thẩm định tự động...`;
 
   try {
@@ -599,8 +811,8 @@ async function handleLeaveSubmit(e) {
     const attached_documents = attachedFiles.map((f) => ({
       document_id: crypto.randomUUID(),
       form_type: leaveType === 'SICK' ? 'C65-HD' : 'LEAVE_PROOF',
-      content_ref: f.base64,
-      mime_type: f.mimeType.includes('pdf') ? 'application/pdf' : 'image/jpeg',
+      content_ref: f.vlmBase64 || f.base64,
+      mime_type: f.vlmMimeType || f.mimeType,
     }));
 
     const payload = {
@@ -630,6 +842,14 @@ async function handleLeaveSubmit(e) {
     });
 
     const result = await res.json();
+    if (!res.ok) {
+      if (res.status === 409 && result?.error === 'LEAVE_BALANCE_CHANGED_RETRY') {
+        await refreshCurrentUserBalance();
+        showToast('Số dư đã thay đổi. Vui lòng kiểm tra lại trước khi gửi đơn.', 'error');
+        return;
+      }
+      throw new Error(result?.error || 'Không thể xử lý đơn nghỉ.');
+    }
     displayEvaluationResult(result, payload);
 
     saveUserRequest({
@@ -667,9 +887,8 @@ async function handleLeaveSubmit(e) {
       manager_action: null,
     });
 
-    if (result.outcome === 'AUTO_APPROVE' && leaveType === 'ANNUAL') {
-      currentUser.balance.annual = Math.max(0, currentUser.balance.annual - daysRequested);
-      applyUserProfile(currentUser);
+    if (result.outcome === 'AUTO_APPROVE') {
+      await refreshCurrentUserBalance();
     }
 
     showToast('Đã nhận quyết định thẩm định hồ sơ thành công', 'success');
@@ -677,7 +896,8 @@ async function handleLeaveSubmit(e) {
     console.error('Submit error', err);
     showToast('Lỗi kết nối máy chủ phân xử. Vui lòng thử lại.', 'error');
   } finally {
-    submitBtn.disabled = false;
+    leaveSubmissionInProgress = false;
+    updateLeaveSubmitButtonState();
     submitBtn.innerHTML = originalText;
   }
 }
@@ -703,7 +923,9 @@ function displayEvaluationResult(result, payload) {
     boxClass = 'rejected';
     icon = ICONS.alertTriangle;
     title = 'Yêu Cầu Chưa Đủ Điều Kiện Phê Duyệt';
-    desc = 'Hồ sơ không đáp ứng điều kiện theo quy chế hiện hành (số dư phép năm không đủ hoặc loại hợp đồng lao động chưa được áp dụng).';
+    desc = result.policy_basis?.includes('SICK evidence check')
+      ? 'Minh chứng không phải giấy tờ y tế phù hợp với đơn nghỉ ốm. Vui lòng nộp lại đơn kèm chứng từ y tế liên quan.'
+      : 'Hồ sơ không đáp ứng điều kiện theo quy chế hiện hành (số dư phép năm không đủ hoặc loại hợp đồng lao động chưa được áp dụng).';
   }
 
   container.innerHTML = `
@@ -730,6 +952,8 @@ function displayEvaluationResult(result, payload) {
           <span class="eval-meta-val">${result.policy_basis || 'Quy chế Quản lý Nhân sự Doanh nghiệp'}</span>
         </div>
       </div>
+
+      ${renderEvidenceAssessmentsHtml(result.evidence_assessments)}
 
       <button type="button" class="audit-collapse-btn" onclick="toggleReceipt()">
         ${ICONS.lock} Thông tin kiểm toán & Mã bảo chứng điện tử (Audit Trail)
@@ -927,6 +1151,7 @@ function renderCaseDetail(caseId) {
       <div><strong>Khoảng thời gian:</strong> ${c.startDate} – ${c.endDate} (<strong>${c.days} ngày làm việc</strong>)</div>
       <div style="margin-top:4px"><strong>Lý do trình bày:</strong> ${c.reason}</div>
       <div style="margin-top:4px; color:var(--neutral-500)"><strong>Nhận định hệ thống:</strong> ${c.note}</div>
+      ${renderEvidenceAssessmentsHtml(c.evidenceAssessments)}
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px">
@@ -972,8 +1197,8 @@ async function resolveReviewerCase(caseId, resolution) {
       : 'SWITCH_LEAVE_TYPE';
 
     const overridePayload = {
-      decision_id: crypto.randomUUID(),
-      request_id: crypto.randomUUID(),
+      decision_id: isUuid(c.decisionId) ? c.decisionId : crypto.randomUUID(),
+      request_id: isUuid(c.requestId) ? c.requestId : crypto.randomUUID(),
       reviewer_id: reviewerHash,
       resolution: apiResolution,
       reviewer_notes: `Quản trị viên ${currentUser.name} đã xét duyệt quyết định trên Reviewer Portal.`,
@@ -990,9 +1215,7 @@ async function resolveReviewerCase(caseId, resolution) {
       body: JSON.stringify(overridePayload),
     });
 
-    if (!res.ok) {
-      console.warn('Override response non-200', await res.text());
-    }
+    if (!res.ok) throw new Error((await res.json()).error || 'Override request failed');
 
     if (resolution === 'APPROVE') {
       c.status = 'APPROVED';
@@ -1037,11 +1260,12 @@ async function runReviewerRejudge(caseId) {
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
+        const vlmBase64 = await optimizeEvidenceImageForVlm(blob, base64);
         docs.push({
           document_id: crypto.randomUUID(),
           form_type: c.leaveType === 'SICK' ? 'C65-HD' : 'ĐƠN XIN NGHỈ PHÉP',
-          content_ref: base64,
-          mime_type: blob.type || 'image/jpeg',
+          content_ref: vlmBase64,
+          mime_type: vlmBase64.match(/^data:([^;,]+)/)?.[1] || blob.type || 'image/jpeg',
         });
       } catch (err) {
         console.warn('Could not attach doc for rejudge', err);
@@ -1074,8 +1298,11 @@ async function runReviewerRejudge(caseId) {
     });
 
     const result = await res.json();
+    if (!res.ok) throw new Error(result?.error || 'Rejudge request failed');
     c.decisionId = result.decision_id;
+    c.requestId = payload.request_id;
     c.note = `AI thẩm định (${result.outcome}): ${result.policy_basis}`;
+    c.evidenceAssessments = result.evidence_assessments || [];
     if (result.outcome === 'AUTO_APPROVE') {
       c.status = 'APPROVED';
       c.statusLabel = 'Tự động duyệt';
@@ -1761,8 +1988,14 @@ function vlmLoadFile(file) {
     return;
   }
   const reader = new FileReader();
-  reader.onload = (e) => {
-    vlmFileData = { dataUrl: e.target.result, name: file.name, mimeType: file.type };
+  reader.onload = async (e) => {
+    const analysisDataUrl = await optimizeEvidenceImageForVlm(file, e.target.result);
+    vlmFileData = {
+      dataUrl: e.target.result,
+      analysisDataUrl,
+      name: file.name,
+      mimeType: analysisDataUrl.match(/^data:([^;,]+)/)?.[1] || file.type,
+    };
     const img = document.getElementById('vlm-preview-img');
     const placeholder = document.getElementById('vlm-preview-placeholder');
     const info = document.getElementById('vlm-file-info');
@@ -1892,7 +2125,7 @@ async function vlmAnalyzeDocument() {
       {
         document_id: crypto.randomUUID(),
         form_type: formType,
-        content_ref: vlmFileData.dataUrl,
+        content_ref: vlmFileData.analysisDataUrl || vlmFileData.dataUrl,
         mime_type: vlmFileData.mimeType,
       },
     ],
@@ -1929,9 +2162,9 @@ async function vlmAnalyzeDocument() {
     } else {
       resultsArea.innerHTML = `
         <div style="background:#f0fdf4; border:1px solid #16a34a; border-radius:var(--radius-md); padding:14px; margin-bottom:14px">
-          <div style="font-weight:700; font-size:13px; color:#166534; margin-bottom:4px">Chứng Từ Đạt Chuẩn Xác Minh Thị Giác</div>
+          <div style="font-weight:700; font-size:13px; color:#166534; margin-bottom:4px">Đã Phân Tích Minh Chứng</div>
           <div style="font-size:12.5px; color:var(--neutral-800); line-height:1.5">
-            Mộc đỏ và các trường thông tin trên mẫu đối soát hợp lệ. Tiến trình chuyển tiếp thành công tới engine quy tắc.
+            Hệ thống đã kiểm tra loại giấy tờ, dấu mộc đỏ và chữ ký. Chi tiết đối chiếu với loại nghỉ được hiển thị bên dưới.
           </div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px">
@@ -1949,6 +2182,13 @@ async function vlmAnalyzeDocument() {
           </div>
         </div>
       `;
+    }
+
+    if (resultsArea && Array.isArray(result.evidence_assessments)) {
+      resultsArea.insertAdjacentHTML(
+        'beforeend',
+        renderEvidenceAssessmentsHtml(result.evidence_assessments)
+      );
     }
 
     addHistoryRecord({
@@ -2061,5 +2301,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await restoreSession();
   checkBackendHealth();
-  setInterval(checkBackendHealth, 15000);
+  setInterval(() => {
+    checkBackendHealth();
+    if (!document.hidden) void refreshCurrentUserBalance();
+  }, 15000);
 });
